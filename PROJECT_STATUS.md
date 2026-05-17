@@ -19,6 +19,8 @@
 - Confirmed the local repository is `/Users/ptiagomp/Desktop/codex projects/art project` and `origin` points to `https://github.com/tiagomartinspinto/soft_traces_triptych.git`.
 - Pushed `main` to GitHub and verified the required project files are present on `origin/main`.
 - Scanned tracked files for assistant/tooling references outside this status file.
+- Added a GitHub Pages deployment workflow that builds the Vite app and publishes `dist/`.
+- Added `vite.config.js` with the `/soft_traces_triptych/` base path for the Pages project URL.
 
 ## Files Changed
 
@@ -28,6 +30,8 @@
 - `package-lock.json`
 - `README.md`
 - `PROJECT_STATUS.md`
+- `.github/workflows/deploy-pages.yml`
+- `vite.config.js`
 - `src/main.jsx`
 - `src/styles.css`
 - `src/data/cameras.json`
@@ -39,12 +43,13 @@
 - Test the three sender devices in the actual university or exhibition Wi-Fi environment.
 - Confirm physical camera framing and signage in the installation space.
 - Decide whether labels and text fragments should remain visible during the exhibition.
-- Decide whether to publish the `dist/` build output separately or deploy from source with a platform build command.
+- Confirm the first GitHub Pages workflow run completes successfully after the workflow is pushed.
 
 ## Known Issues
 
 - VDO.Ninja iframe error screens are controlled by the embedded service when a placeholder or invalid stream ID is used. Set `active` to `false` until a real feed is ready to use the artwork fallback state.
 - Browser fullscreen requires a user gesture. Press `F` on the display keyboard or use the browser/display fullscreen controls.
+- GitHub Pages may briefly show the old source `index.html` while the first workflow deployment finishes and the CDN cache refreshes.
 
 ## Manual Tests Completed
 
@@ -52,9 +57,11 @@
 - Run `npm run build`.
 - Confirm local git status, branch, remote URL, and directory listing.
 - Confirm required tracked source files exist locally.
+- Confirm the live Pages URL currently responds.
 
 ## Manual Tests To Do Next
 
+- Open `https://tiagomartinspinto.github.io/soft_traces_triptych/` after the Pages workflow finishes and confirm the triptych renders.
 - Run `npm run dev` or `npm run preview` and verify the layout on the exhibition display.
 - Press `F`, `L`, `T`, `D`, and `O` to confirm keyboard controls.
 - Test each real VDO.Ninja viewing URL in `src/data/cameras.json`.

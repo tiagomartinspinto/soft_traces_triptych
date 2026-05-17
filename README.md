@@ -2,6 +2,8 @@
 
 Fullscreen React/Vite installation for three embedded VDO.Ninja viewing feeds. The work is designed for a large horizontal exhibition screen, with a responsive stacked layout for smaller screens.
 
+Live Pages URL: https://tiagomartinspinto.github.io/soft_traces_triptych/
+
 ## Run Locally
 
 ```bash
@@ -15,6 +17,10 @@ For an exhibition build:
 npm run build
 npm run preview
 ```
+
+## Deploy
+
+Pushes to `main` build and publish the `dist/` folder through GitHub Pages. The Vite base path is configured in `vite.config.js` for the project URL above.
 
 ## Edit Camera Feeds
 
