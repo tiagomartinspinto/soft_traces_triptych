@@ -21,6 +21,7 @@
 - Scanned tracked files for assistant/tooling references outside this status file.
 - Added a GitHub Pages deployment workflow that builds the Vite app and publishes `dist/`.
 - Added `vite.config.js` with the `/soft_traces_triptych/` base path for the Pages project URL.
+- Updated the Pages workflow to switch the repository to workflow-based Pages deployment and avoid the old branch deployment overwriting the built app.
 
 ## Files Changed
 
@@ -50,6 +51,7 @@
 - VDO.Ninja iframe error screens are controlled by the embedded service when a placeholder or invalid stream ID is used. Set `active` to `false` until a real feed is ready to use the artwork fallback state.
 - Browser fullscreen requires a user gesture. Press `F` on the display keyboard or use the browser/display fullscreen controls.
 - GitHub Pages may briefly show the old source `index.html` while the first workflow deployment finishes and the CDN cache refreshes.
+- The first workflow run briefly raced with the legacy branch-based Pages deployment; the workflow now switches Pages to workflow mode and deploys after that legacy run settles.
 
 ## Manual Tests Completed
 
