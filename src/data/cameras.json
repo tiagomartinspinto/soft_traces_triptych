@@ -9,6 +9,7 @@
     "active": true,
     "vdoNinjaViewUrl": "https://vdo.ninja/?view=REPLACE_OBJECT_STREAM_ID&cleanoutput",
     "fallbackText": "The material is not yet transmitting.",
+    "offlineText": "The material feed will return when the network is restored.",
     "visualMode": "slow-zoom",
     "cropMode": "cover",
     "labelVisible": true
@@ -23,6 +24,7 @@
     "active": true,
     "vdoNinjaViewUrl": "https://vdo.ninja/?view=REPLACE_SPACE_STREAM_ID&cleanoutput",
     "fallbackText": "The room is temporarily absent.",
+    "offlineText": "The room is waiting for the network to return.",
     "visualMode": "normal",
     "cropMode": "cover",
     "labelVisible": true
@@ -37,6 +39,7 @@
     "active": true,
     "vdoNinjaViewUrl": "https://vdo.ninja/?view=REPLACE_TRACE_STREAM_ID&cleanoutput",
     "fallbackText": "The trace has faded.",
+    "offlineText": "The trace is held until the network returns.",
     "visualMode": "ghosted",
     "cropMode": "cover",
     "labelVisible": true

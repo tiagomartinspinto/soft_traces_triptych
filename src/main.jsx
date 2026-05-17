@@ -22,9 +22,10 @@ function canShowFeed(camera) {
   return Boolean(camera.active && camera.vdoNinjaViewUrl);
 }
 
-function Panel({ camera, fragment, panelLabel, labelsEnabled, fragmentsEnabled }) {
+function Panel({ camera, fragment, panelLabel, labelsEnabled, fragmentsEnabled, isOnline }) {
   const showLabel = labelsEnabled && camera.labelVisible;
-  const showFeed = canShowFeed(camera);
+  const showFeed = isOnline && canShowFeed(camera);
+  const fallbackText = isOnline ? camera.fallbackText : camera.offlineText;
 
   return (
     <section className={getPanelClass(camera)} aria-label={`${camera.role}: ${camera.title}`}>
@@ -43,7 +44,7 @@ function Panel({ camera, fragment, panelLabel, labelsEnabled, fragmentsEnabled }
       {!showFeed ? (
         <div className="fallback-state">
           <span>{camera.subtitle}</span>
-          <strong>{camera.fallbackText}</strong>
+          <strong>{fallbackText}</strong>
         </div>
       ) : null}
 
@@ -64,7 +65,7 @@ function Panel({ camera, fragment, panelLabel, labelsEnabled, fragmentsEnabled }
   );
 }
 
-function DebugOverlay({ labelsEnabled, fragmentsEnabled, installMode }) {
+function DebugOverlay({ labelsEnabled, fragmentsEnabled, installMode, browserFullscreen, isOnline }) {
   return (
     <aside className="debug-overlay" aria-label="Configuration overlay">
       <h2>Configuration</h2>
@@ -84,6 +85,14 @@ function DebugOverlay({ labelsEnabled, fragmentsEnabled, installMode }) {
         <div>
           <dt>Install mode</dt>
           <dd>{installMode ? 'on' : 'off'}</dd>
+        </div>
+        <div>
+          <dt>Browser fullscreen</dt>
+          <dd>{browserFullscreen ? 'on' : 'off'}</dd>
+        </div>
+        <div>
+          <dt>Network</dt>
+          <dd>{isOnline ? 'online' : 'offline'}</dd>
         </div>
       </dl>
       <p>{exhibition.setupNote}</p>
@@ -106,6 +115,8 @@ function App() {
   const [installMode, setInstallMode] = useState(true);
   const [overlayEnabled, setOverlayEnabled] = useState(true);
   const [cursorHidden, setCursorHidden] = useState(false);
+  const [browserFullscreen, setBrowserFullscreen] = useState(false);
+  const [isOnline, setIsOnline] = useState(() => navigator.onLine);
 
   const fragmentsByPanel = useMemo(() => {
     return exhibition.textFragments.reduce((map, fragment) => {
@@ -115,9 +126,38 @@ function App() {
   }, []);
 
   useEffect(() => {
+    async function toggleFullscreenStyle() {
+      const isFullscreen = Boolean(document.fullscreenElement);
+      const canRequestFullscreen = Boolean(document.documentElement.requestFullscreen);
+      const canExitFullscreen = Boolean(document.exitFullscreen);
+
+      if (!isFullscreen && canRequestFullscreen) {
+        setInstallMode(true);
+        try {
+          await document.documentElement.requestFullscreen();
+        } catch {
+          setInstallMode((value) => !value);
+        }
+        return;
+      }
+
+      if (isFullscreen && canExitFullscreen) {
+        try {
+          await document.exitFullscreen();
+        } catch {
+          // Keep the visual install mode controllable even when browser fullscreen refuses to exit.
+        } finally {
+          setInstallMode(false);
+        }
+        return;
+      }
+
+      setInstallMode((value) => !value);
+    }
+
     function handleKeyDown(event) {
       const key = event.key.toLowerCase();
-      if (key === 'f') setInstallMode((value) => !value);
+      if (key === 'f') toggleFullscreenStyle();
       if (key === 'l') setLabelsEnabled((value) => !value);
       if (key === 't') setFragmentsEnabled((value) => !value);
       if (key === 'd') setDebugEnabled((value) => !value);
@@ -126,6 +166,35 @@ function App() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  useEffect(() => {
+    function syncFullscreenState() {
+      setBrowserFullscreen(Boolean(document.fullscreenElement));
+    }
+
+    document.addEventListener('fullscreenchange', syncFullscreenState);
+    syncFullscreenState();
+
+    return () => document.removeEventListener('fullscreenchange', syncFullscreenState);
+  }, []);
+
+  useEffect(() => {
+    function markOnline() {
+      setIsOnline(true);
+    }
+
+    function markOffline() {
+      setIsOnline(false);
+    }
+
+    window.addEventListener('online', markOnline);
+    window.addEventListener('offline', markOffline);
+
+    return () => {
+      window.removeEventListener('online', markOnline);
+      window.removeEventListener('offline', markOffline);
+    };
   }, []);
 
   useEffect(() => {
@@ -161,6 +230,7 @@ function App() {
             panelLabel={exhibition.triptychLabels[camera.id]}
             labelsEnabled={labelsEnabled}
             fragmentsEnabled={fragmentsEnabled}
+            isOnline={isOnline}
           />
         ))}
       </div>
@@ -180,6 +250,8 @@ function App() {
           labelsEnabled={labelsEnabled}
           fragmentsEnabled={fragmentsEnabled}
           installMode={installMode}
+          browserFullscreen={browserFullscreen}
+          isOnline={isOnline}
         />
       ) : null}
     </main>

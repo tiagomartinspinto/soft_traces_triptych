@@ -31,6 +31,7 @@ Replace each `vdoNinjaViewUrl` with the VDO.Ninja viewing URL for that camera. T
 ```
 
 Set `active` to `false` or leave `vdoNinjaViewUrl` empty to show that panel's fallback text instead of an iframe.
+When the display browser reports that it is offline, the app uses each panel's `offlineText`.
 
 ## Visual Modes
 
@@ -54,7 +55,7 @@ Artwork copy lives in `src/data/exhibition.json`. Edit the title, subtitle, text
 
 Keyboard shortcuts:
 
-- `F`: toggle fullscreen-style install layout class
+- `F`: toggle fullscreen-style install mode and request browser fullscreen when supported
 - `L`: toggle labels
 - `T`: toggle text fragments
 - `D`: toggle debug/config overlay

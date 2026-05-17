@@ -7,8 +7,10 @@
 - Added editable camera configuration in `src/data/cameras.json`.
 - Added editable artwork and privacy text in `src/data/exhibition.json`.
 - Added fallback states for inactive or missing camera URLs.
+- Added offline-aware fallback copy when the display browser loses network access.
 - Added optional labels, slow text fragments, visual modes, and responsive behavior.
 - Added keyboard shortcuts for install mode, labels, text fragments, and debug overlay.
+- Added browser fullscreen request/exit behavior to the `F` shortcut when supported.
 - Added a keyboard shortcut to hide the title and privacy overlay.
 - Added cursor hiding during install mode inactivity.
 - Added setup and exhibition guidance in `README.md`.
@@ -38,12 +40,15 @@
 ## Known Issues
 
 - VDO.Ninja iframe error screens are controlled by the embedded service when a placeholder or invalid stream ID is used. Set `active` to `false` until a real feed is ready to use the artwork fallback state.
-- Browser fullscreen permission cannot be triggered automatically; use the browser or display system fullscreen controls for the big screen.
+- Browser fullscreen requires a user gesture. Press `F` on the display keyboard or use the browser/display fullscreen controls.
 
-## Manual Tests To Do Next
+## Manual Tests Completed
 
 - Run `npm install`.
 - Run `npm run build`.
+
+## Manual Tests To Do Next
+
 - Run `npm run dev` or `npm run preview` and verify the layout on the exhibition display.
 - Press `F`, `L`, `T`, `D`, and `O` to confirm keyboard controls.
 - Test each real VDO.Ninja viewing URL in `src/data/cameras.json`.
