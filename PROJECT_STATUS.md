@@ -16,6 +16,9 @@
 - Added setup and exhibition guidance in `README.md`.
 - Installed dependencies and confirmed the production build succeeds.
 - Added `.gitignore` for generated build output and installed dependencies.
+- Confirmed the local repository is `/Users/ptiagomp/Desktop/codex projects/art project` and `origin` points to `https://github.com/tiagomartinspinto/soft_traces_triptych.git`.
+- Pushed `main` to GitHub and verified the required project files are present on `origin/main`.
+- Scanned tracked files for assistant/tooling references outside this status file.
 
 ## Files Changed
 
@@ -36,6 +39,7 @@
 - Test the three sender devices in the actual university or exhibition Wi-Fi environment.
 - Confirm physical camera framing and signage in the installation space.
 - Decide whether labels and text fragments should remain visible during the exhibition.
+- Decide whether to publish the `dist/` build output separately or deploy from source with a platform build command.
 
 ## Known Issues
 
@@ -46,6 +50,8 @@
 
 - Run `npm install`.
 - Run `npm run build`.
+- Confirm local git status, branch, remote URL, and directory listing.
+- Confirm required tracked source files exist locally.
 
 ## Manual Tests To Do Next
 
