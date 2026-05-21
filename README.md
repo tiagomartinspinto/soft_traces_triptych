@@ -36,9 +36,8 @@ Replace each `vdoNinjaViewUrl` with the VDO.Ninja viewing URL for that camera. T
 "vdoNinjaViewUrl": "https://vdo.ninja/?view=REPLACE_OBJECT_STREAM_ID&cleanoutput"
 ```
 
-Set `active` to `false` or leave `vdoNinjaViewUrl` empty to show that panel's fallback text instead of an iframe.
+If `active` is `false`, `vdoNinjaViewUrl` is empty, or the URL contains `REPLACE_`, the app shows that panel's artwork fallback instead of rendering an iframe.
 When the display browser reports that it is offline, the app uses each panel's `offlineText`.
-Keep `useFallbackInsteadOfIframeWhenPlaceholder` set to `true` while a URL contains `REPLACE_`; the installation will show the artwork fallback instead of embedding a placeholder feed.
 
 Feed URLs are not visitor-editable through URL parameters, and there is no public admin interface. To edit feeds locally, update `public/config/cameras.json`, save, and refresh the browser. The app fetches that JSON file at runtime and falls back to an internal safe three-panel configuration if the file is missing or invalid.
 

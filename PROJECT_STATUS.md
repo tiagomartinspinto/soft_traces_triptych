@@ -22,7 +22,6 @@
 - Added a GitHub Pages deployment workflow that builds the Vite app and publishes `dist/`.
 - Added `vite.config.js` with the `/soft_traces_triptych/` base path for the Pages project URL.
 - Updated the Pages workflow to switch the repository to workflow-based Pages deployment and avoid the old branch deployment overwriting the built app.
-- Added `useFallbackInsteadOfIframeWhenPlaceholder` to each camera entry.
 - Added placeholder URL detection so `REPLACE_` VDO.Ninja URLs render the artwork fallback instead of an iframe.
 - Added a debug-overlay warning that lists panels still using placeholder feed URLs.
 - Moved camera configuration out of the bundled React source and into `public/config/cameras.json`.
@@ -30,6 +29,7 @@
 - Added a debug-overlay note showing whether the active camera config came from runtime config or internal fallback.
 - Added `public/config/cameras.local.example.json` and ignored `public/config/cameras.local.json` for private local exhibition feed details.
 - Confirmed feed URLs are not configurable through visitor URL parameters and no public admin UI was added.
+- Removed the obsolete `useFallbackInsteadOfIframeWhenPlaceholder` config flag because placeholder fallback is always enforced in code.
 
 ## Files Changed
 
@@ -51,7 +51,6 @@
 ## Remaining Tasks
 
 - Replace all placeholder VDO.Ninja view URLs with real viewing links.
-- Keep placeholder protection enabled until every VDO.Ninja viewing URL has been replaced.
 - For GitHub Pages, commit and push any intended public camera config change so the Pages workflow redeploys it.
 - For local/private exhibition operation, create `public/config/cameras.local.json`, fill in real feeds there, and copy those values into the local runtime `public/config/cameras.json` without committing private URLs.
 - Test the three sender devices in the actual university or exhibition Wi-Fi environment.
@@ -73,6 +72,7 @@
 - Run `npm run build`.
 - Run `npm run build` after adding placeholder iframe protection.
 - Run `npm run build` after moving camera config to runtime JSON.
+- Run `npm run build` after removing the obsolete placeholder fallback config flag.
 - Confirm the local runtime config URL returns the three-panel JSON.
 - Confirm the debug overlay reports `runtime config` during normal local operation.
 - Confirm placeholder runtime URLs render fallback states with zero iframes.
