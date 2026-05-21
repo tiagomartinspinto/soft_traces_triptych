@@ -22,6 +22,9 @@
 - Added a GitHub Pages deployment workflow that builds the Vite app and publishes `dist/`.
 - Added `vite.config.js` with the `/soft_traces_triptych/` base path for the Pages project URL.
 - Updated the Pages workflow to switch the repository to workflow-based Pages deployment and avoid the old branch deployment overwriting the built app.
+- Added `useFallbackInsteadOfIframeWhenPlaceholder` to each camera entry.
+- Added placeholder URL detection so `REPLACE_` VDO.Ninja URLs render the artwork fallback instead of an iframe.
+- Added a debug-overlay warning that lists panels still using placeholder feed URLs.
 
 ## Files Changed
 
@@ -41,6 +44,7 @@
 ## Remaining Tasks
 
 - Replace all placeholder VDO.Ninja view URLs with real viewing links.
+- Keep placeholder protection enabled until every VDO.Ninja viewing URL has been replaced.
 - Test the three sender devices in the actual university or exhibition Wi-Fi environment.
 - Confirm physical camera framing and signage in the installation space.
 - Decide whether labels and text fragments should remain visible during the exhibition.
@@ -48,7 +52,7 @@
 
 ## Known Issues
 
-- VDO.Ninja iframe error screens are controlled by the embedded service when a placeholder or invalid stream ID is used. Set `active` to `false` until a real feed is ready to use the artwork fallback state.
+- VDO.Ninja iframe error screens are controlled by the embedded service when an invalid non-placeholder stream ID is used. Placeholder URLs containing `REPLACE_` now use the artwork fallback instead of an iframe.
 - Browser fullscreen requires a user gesture. Press `F` on the display keyboard or use the browser/display fullscreen controls.
 - GitHub Pages may briefly show the old source `index.html` while the first workflow deployment finishes and the CDN cache refreshes.
 - The first workflow run briefly raced with the legacy branch-based Pages deployment; the workflow now switches Pages to workflow mode and deploys after that legacy run settles.
@@ -57,6 +61,7 @@
 
 - Run `npm install`.
 - Run `npm run build`.
+- Run `npm run build` after adding placeholder iframe protection.
 - Confirm local git status, branch, remote URL, and directory listing.
 - Confirm required tracked source files exist locally.
 - Confirm the live Pages URL currently responds.
@@ -66,6 +71,8 @@
 - Open `https://tiagomartinspinto.github.io/soft_traces_triptych/` after the Pages workflow finishes and confirm the triptych renders.
 - Run `npm run dev` or `npm run preview` and verify the layout on the exhibition display.
 - Press `F`, `L`, `T`, `D`, and `O` to confirm keyboard controls.
+- Press `D` and confirm the debug overlay lists any panels still using placeholder URLs.
+- Temporarily replace one `REPLACE_` URL with a real VDO.Ninja view URL and confirm that panel renders the iframe while the others remain in fallback.
 - Test each real VDO.Ninja viewing URL in `src/data/cameras.json`.
 - Check that no panel films identifiable people without consent.
 - Confirm that camera devices remain powered, unlocked, and notification-free.

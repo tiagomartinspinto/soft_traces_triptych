@@ -319,6 +319,10 @@ body {
   line-height: 1.45;
 }
 
+.debug-overlay .debug-warning {
+  color: rgba(246, 242, 232, 0.86);
+}
+
 .debug-overlay li {
   list-style: none;
 }

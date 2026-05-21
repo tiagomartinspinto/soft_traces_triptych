@@ -38,6 +38,7 @@ Replace each `vdoNinjaViewUrl` with the VDO.Ninja viewing URL for that camera. T
 
 Set `active` to `false` or leave `vdoNinjaViewUrl` empty to show that panel's fallback text instead of an iframe.
 When the display browser reports that it is offline, the app uses each panel's `offlineText`.
+Keep `useFallbackInsteadOfIframeWhenPlaceholder` set to `true` while a URL contains `REPLACE_`; the installation will show the artwork fallback instead of embedding a placeholder feed.
 
 ## Visual Modes
 

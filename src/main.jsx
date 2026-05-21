@@ -5,6 +5,7 @@ import exhibition from './data/exhibition.json';
 import './styles.css';
 
 const INACTIVITY_DELAY = 2600;
+const PLACEHOLDER_TOKEN = 'REPLACE_';
 
 function getPanelClass(camera) {
   return [
@@ -19,7 +20,22 @@ function getPanelClass(camera) {
 }
 
 function canShowFeed(camera) {
-  return Boolean(camera.active && camera.vdoNinjaViewUrl);
+  return Boolean(
+    camera.active &&
+      camera.vdoNinjaViewUrl &&
+      !shouldUseFallbackForPlaceholder(camera)
+  );
+}
+
+function hasPlaceholderUrl(camera) {
+  return Boolean(camera.vdoNinjaViewUrl?.includes(PLACEHOLDER_TOKEN));
+}
+
+function shouldUseFallbackForPlaceholder(camera) {
+  return Boolean(
+    hasPlaceholderUrl(camera) &&
+      camera.useFallbackInsteadOfIframeWhenPlaceholder !== false
+  );
 }
 
 function Panel({ camera, fragment, panelLabel, labelsEnabled, fragmentsEnabled, isOnline }) {
@@ -66,6 +82,8 @@ function Panel({ camera, fragment, panelLabel, labelsEnabled, fragmentsEnabled, 
 }
 
 function DebugOverlay({ labelsEnabled, fragmentsEnabled, installMode, browserFullscreen, isOnline }) {
+  const placeholderCameras = cameras.filter(shouldUseFallbackForPlaceholder);
+
   return (
     <aside className="debug-overlay" aria-label="Configuration overlay">
       <h2>Configuration</h2>
@@ -96,6 +114,11 @@ function DebugOverlay({ labelsEnabled, fragmentsEnabled, installMode, browserFul
         </div>
       </dl>
       <p>{exhibition.setupNote}</p>
+      {placeholderCameras.length > 0 ? (
+        <p className="debug-warning">
+          Placeholder feed URL still configured for: {placeholderCameras.map((camera) => camera.id).join(', ')}.
+        </p>
+      ) : null}
       <ul>
         {cameras.map((camera) => (
           <li key={camera.id}>
