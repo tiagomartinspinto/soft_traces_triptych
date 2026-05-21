@@ -1,0 +1,50 @@
+[
+  {
+    "id": "object",
+    "role": "Object",
+    "title": "Material Witness",
+    "subtitle": "Panel I",
+    "locationLabel": "Object table",
+    "description": "A fixed live view of a material or object.",
+    "active": true,
+    "vdoNinjaViewUrl": "https://vdo.ninja/?view=REPLACE_OBJECT_VIEW_ID&cleanoutput",
+    "useFallbackInsteadOfIframeWhenPlaceholder": true,
+    "fallbackText": "The material is not yet transmitting.",
+    "offlineText": "The material feed will return when the network is restored.",
+    "visualMode": "slow-zoom",
+    "cropMode": "cover",
+    "labelVisible": true
+  },
+  {
+    "id": "space",
+    "role": "Space",
+    "title": "Room Witness",
+    "subtitle": "Panel II",
+    "locationLabel": "University space",
+    "description": "A fixed live view of a room, corridor, window, or empty chair.",
+    "active": true,
+    "vdoNinjaViewUrl": "https://vdo.ninja/?view=REPLACE_SPACE_VIEW_ID&cleanoutput",
+    "useFallbackInsteadOfIframeWhenPlaceholder": true,
+    "fallbackText": "The room is temporarily absent.",
+    "offlineText": "The room is waiting for the network to return.",
+    "visualMode": "normal",
+    "cropMode": "cover",
+    "labelVisible": true
+  },
+  {
+    "id": "trace",
+    "role": "Trace",
+    "title": "Memory Witness",
+    "subtitle": "Panel III",
+    "locationLabel": "Trace station",
+    "description": "A fixed live view of shadow, reflection, movement, or a detail.",
+    "active": true,
+    "vdoNinjaViewUrl": "https://vdo.ninja/?view=REPLACE_TRACE_VIEW_ID&cleanoutput",
+    "useFallbackInsteadOfIframeWhenPlaceholder": true,
+    "fallbackText": "The trace has faded.",
+    "offlineText": "The trace is held until the network returns.",
+    "visualMode": "ghosted",
+    "cropMode": "cover",
+    "labelVisible": true
+  }
+]

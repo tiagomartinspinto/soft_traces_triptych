@@ -22,5 +22,5 @@
     }
   ],
   "privacyNote": "This artwork may include live camera feeds from installed phones or tablets. Cameras should only show spaces, objects, materials, or consenting participants. The website does not record video, does not ask visitors for webcam access, and does not store visitor data.",
-  "setupNote": "Replace the VDO.Ninja view URLs in src/data/cameras.json before exhibition use."
+  "setupNote": "Replace the VDO.Ninja view URLs in public/config/cameras.json before exhibition use."
 }

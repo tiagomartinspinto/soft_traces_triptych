@@ -24,7 +24,7 @@ Pushes to `main` build and publish the `dist/` folder through GitHub Pages. The 
 
 ## Edit Camera Feeds
 
-Camera configuration lives in `src/data/cameras.json`. Keep exactly three entries for the triptych:
+Camera configuration is loaded at runtime from `public/config/cameras.json`. Keep exactly three entries for the triptych:
 
 - `object`: Object / Material
 - `space`: Space / Room
@@ -39,6 +39,10 @@ Replace each `vdoNinjaViewUrl` with the VDO.Ninja viewing URL for that camera. T
 Set `active` to `false` or leave `vdoNinjaViewUrl` empty to show that panel's fallback text instead of an iframe.
 When the display browser reports that it is offline, the app uses each panel's `offlineText`.
 Keep `useFallbackInsteadOfIframeWhenPlaceholder` set to `true` while a URL contains `REPLACE_`; the installation will show the artwork fallback instead of embedding a placeholder feed.
+
+Feed URLs are not visitor-editable through URL parameters, and there is no public admin interface. To edit feeds locally, update `public/config/cameras.json`, save, and refresh the browser. The app fetches that JSON file at runtime and falls back to an internal safe three-panel configuration if the file is missing or invalid.
+
+On GitHub Pages, changing `public/config/cameras.json` still requires committing, pushing, and waiting for the Pages workflow to redeploy. For exhibition use from a local machine, keep real feed details private by copying `public/config/cameras.local.example.json` to the ignored `public/config/cameras.local.json`, filling in the real URLs there, and copying those values into `public/config/cameras.json` only in the local working copy used by the exhibition display.
 
 ## Visual Modes
 

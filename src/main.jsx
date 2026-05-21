@@ -1,11 +1,34 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import cameras from './data/cameras.json';
 import exhibition from './data/exhibition.json';
+import fallbackCameras from './data/fallbackCameras';
 import './styles.css';
 
 const INACTIVITY_DELAY = 2600;
 const PLACEHOLDER_TOKEN = 'REPLACE_';
+const EXPECTED_CAMERA_IDS = ['object', 'space', 'trace'];
+
+function isValidCameraConfig(value) {
+  if (!Array.isArray(value) || value.length !== EXPECTED_CAMERA_IDS.length) {
+    return false;
+  }
+
+  return EXPECTED_CAMERA_IDS.every((id, index) => value[index]?.id === id);
+}
+
+async function loadCameraConfig() {
+  const response = await fetch(`${import.meta.env.BASE_URL}config/cameras.json`, { cache: 'no-cache' });
+  if (!response.ok) {
+    throw new Error(`Camera config request failed: ${response.status}`);
+  }
+
+  const cameras = await response.json();
+  if (!isValidCameraConfig(cameras)) {
+    throw new Error('Camera config must contain object, space, and trace panels in order.');
+  }
+
+  return cameras;
+}
 
 function getPanelClass(camera) {
   return [
@@ -22,20 +45,17 @@ function getPanelClass(camera) {
 function canShowFeed(camera) {
   return Boolean(
     camera.active &&
-      camera.vdoNinjaViewUrl &&
-      !shouldUseFallbackForPlaceholder(camera)
+      hasConfiguredUrl(camera) &&
+      !hasPlaceholderUrl(camera)
   );
+}
+
+function hasConfiguredUrl(camera) {
+  return Boolean(camera.vdoNinjaViewUrl?.trim());
 }
 
 function hasPlaceholderUrl(camera) {
   return Boolean(camera.vdoNinjaViewUrl?.includes(PLACEHOLDER_TOKEN));
-}
-
-function shouldUseFallbackForPlaceholder(camera) {
-  return Boolean(
-    hasPlaceholderUrl(camera) &&
-      camera.useFallbackInsteadOfIframeWhenPlaceholder !== false
-  );
 }
 
 function Panel({ camera, fragment, panelLabel, labelsEnabled, fragmentsEnabled, isOnline }) {
@@ -81,8 +101,17 @@ function Panel({ camera, fragment, panelLabel, labelsEnabled, fragmentsEnabled, 
   );
 }
 
-function DebugOverlay({ labelsEnabled, fragmentsEnabled, installMode, browserFullscreen, isOnline }) {
-  const placeholderCameras = cameras.filter(shouldUseFallbackForPlaceholder);
+function DebugOverlay({
+  cameras,
+  configError,
+  configSource,
+  labelsEnabled,
+  fragmentsEnabled,
+  installMode,
+  browserFullscreen,
+  isOnline,
+}) {
+  const placeholderCameras = cameras.filter(hasPlaceholderUrl);
 
   return (
     <aside className="debug-overlay" aria-label="Configuration overlay">
@@ -112,8 +141,15 @@ function DebugOverlay({ labelsEnabled, fragmentsEnabled, installMode, browserFul
           <dt>Network</dt>
           <dd>{isOnline ? 'online' : 'offline'}</dd>
         </div>
+        <div>
+          <dt>Camera config</dt>
+          <dd>{configSource === 'runtime' ? 'runtime config' : 'internal fallback'}</dd>
+        </div>
       </dl>
       <p>{exhibition.setupNote}</p>
+      {configError ? (
+        <p className="debug-warning">{configError}</p>
+      ) : null}
       {placeholderCameras.length > 0 ? (
         <p className="debug-warning">
           Placeholder feed URL still configured for: {placeholderCameras.map((camera) => camera.id).join(', ')}.
@@ -132,6 +168,9 @@ function DebugOverlay({ labelsEnabled, fragmentsEnabled, installMode, browserFul
 }
 
 function App() {
+  const [cameras, setCameras] = useState(fallbackCameras);
+  const [configSource, setConfigSource] = useState('internal-fallback');
+  const [configError, setConfigError] = useState('');
   const [labelsEnabled, setLabelsEnabled] = useState(true);
   const [fragmentsEnabled, setFragmentsEnabled] = useState(true);
   const [debugEnabled, setDebugEnabled] = useState(false);
@@ -146,6 +185,28 @@ function App() {
       map[fragment.panel] = fragment.text;
       return map;
     }, {});
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    loadCameraConfig()
+      .then((runtimeCameras) => {
+        if (!isMounted) return;
+        setCameras(runtimeCameras);
+        setConfigSource('runtime');
+        setConfigError('');
+      })
+      .catch((error) => {
+        if (!isMounted) return;
+        setCameras(fallbackCameras);
+        setConfigSource('internal-fallback');
+        setConfigError(error instanceof Error ? error.message : 'Camera config could not be loaded.');
+      });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -270,6 +331,9 @@ function App() {
 
       {debugEnabled ? (
         <DebugOverlay
+          cameras={cameras}
+          configError={configError}
+          configSource={configSource}
           labelsEnabled={labelsEnabled}
           fragmentsEnabled={fragmentsEnabled}
           installMode={installMode}
