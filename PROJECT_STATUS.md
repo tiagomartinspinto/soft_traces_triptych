@@ -18,11 +18,13 @@
 - Added `.gitignore` for generated build output, installed dependencies, and private local camera config.
 - Added a GitHub Pages deployment workflow and Vite base path for `/soft_traces_triptych/`.
 - Confirmed feed URLs are not configurable through visitor URL parameters and no public admin UI was added.
+- Switched the artwork typography to Roboto through Google Fonts with a single clean fallback stack.
 
 ## Files Changed
 
 - `README.md`
 - `PROJECT_STATUS.md`
+- `index.html`
 - `.gitignore`
 - `public/config/cameras.json`
 - `public/config/cameras.local.example.json`
@@ -53,7 +55,8 @@
 ## Manual Tests Completed
 
 - Run `npm run build`.
-- Scan tracked files outside `PROJECT_STATUS.md` for Codex, OpenAI, ChatGPT, and AI-assistant tooling references.
+- Run `npm run build` after switching the artwork typography to Roboto.
+- Run repository hygiene scan for disallowed provenance terms.
 - Open the production preview at `http://127.0.0.1:4173/soft_traces_triptych/`.
 - Confirm the browser renders exactly three panels and the configured sentence.
 - Press `D` and confirm the debug overlay lists the selected source for each panel.
