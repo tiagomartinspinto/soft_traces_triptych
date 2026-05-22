@@ -1,26 +1,4 @@
 {
-  "title": "Soft Traces: Triptych",
-  "subtitle": "Material / Space / Trace",
-  "introText": "Three installed devices act as live witnesses. Their feeds form a digital triptych of material, space, and trace.",
-  "triptychLabels": {
-    "object": "Object / Material",
-    "space": "Space / Room",
-    "trace": "Trace / Memory"
-  },
-  "textFragments": [
-    {
-      "panel": "object",
-      "text": "A surface keeps listening after the hand has moved away."
-    },
-    {
-      "panel": "space",
-      "text": "The room appears through attention, delay, and partial witness."
-    },
-    {
-      "panel": "trace",
-      "text": "What remains is not evidence, only a softened interval."
-    }
-  ],
-  "privacyNote": "This artwork may include live camera feeds from installed phones or tablets. Cameras should only show spaces, objects, materials, or consenting participants. The website does not record video, does not ask visitors for webcam access, and does not store visitor data.",
-  "setupNote": "Replace the VDO.Ninja view URLs in public/config/cameras.json before exhibition use."
+  "sentence": "A surface keeps listening after the hand has moved away.",
+  "setupNote": "Configure only manually selected VDO.Ninja feeds, local video loops, or publicly available webcam/live camera feeds."
 }

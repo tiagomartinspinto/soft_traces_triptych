@@ -1,6 +1,6 @@
 # Soft Traces: Triptych
 
-Fullscreen React/Vite installation for three embedded VDO.Ninja viewing feeds. The work is designed for a large horizontal exhibition screen, with a responsive stacked layout for smaller screens.
+Fullscreen React/Vite installation for three manually configured image sources. Each panel can show a VDO.Ninja live feed, a local pre-recorded video loop, or a selected publicly available webcam/live camera feed.
 
 Live Pages URL: https://tiagomartinspinto.github.io/soft_traces_triptych/
 
@@ -18,30 +18,108 @@ npm run build
 npm run preview
 ```
 
-## Deploy
+## Exhibition Interface
 
-Pushes to `main` build and publish the `dist/` folder through GitHub Pages. The Vite base path is configured in `vite.config.js` for the project URL above.
+The normal exhibition interface intentionally shows only one sentence over the triptych:
 
-## Edit Camera Feeds
+> A surface keeps listening after the hand has moved away.
 
-Camera configuration is loaded at runtime from `public/config/cameras.json`. Keep exactly three entries for the triptych:
+Edit that sentence in `src/data/exhibition.json`.
 
-- `object`: Object / Material
-- `space`: Space / Room
-- `trace`: Trace / Memory
+Debug mode is available with `D`. Fullscreen mode is available with `F`. The old label/text/overlay shortcuts are disabled so the public view stays minimal.
 
-Replace each `vdoNinjaViewUrl` with the VDO.Ninja viewing URL for that camera. The default values are placeholders:
+The site does not request visitor webcam or microphone access, does not record video, does not use analytics, does not set cookies, and does not store visitor data.
+
+## Configure Sources
+
+Camera configuration is loaded at runtime from `public/config/cameras.json`. Keep exactly three panels, in this order:
+
+- `object`
+- `space`
+- `trace`
+
+Each panel may define one source directly, or a `sources` array. When `sources` exists, the browser chooses one random active source on page load and keeps it until the page is refreshed. Random selection happens locally in the browser.
+
+If `active` is `false`, `src` is empty, or `src` contains `REPLACE_`, the panel shows its fallback state instead of rendering media.
+
+### VDO.Ninja Feed
+
+Use a VDO.Ninja view URL with `cleanoutput`:
 
 ```json
-"vdoNinjaViewUrl": "https://vdo.ninja/?view=REPLACE_OBJECT_STREAM_ID&cleanoutput"
+{
+  "id": "object",
+  "sourceType": "vdo",
+  "src": "https://vdo.ninja/?view=REPLACE_OBJECT_STREAM_ID&cleanoutput",
+  "active": true,
+  "fallbackText": "The surface is silent."
+}
 ```
 
-If `active` is `false`, `vdoNinjaViewUrl` is empty, or the URL contains `REPLACE_`, the app shows that panel's artwork fallback instead of rendering an iframe.
-When the display browser reports that it is offline, the app uses each panel's `offlineText`.
+Only configure VDO.Ninja feeds that you control and have permission to exhibit.
 
-Feed URLs are not visitor-editable through URL parameters, and there is no public admin interface. To edit feeds locally, update `public/config/cameras.json`, save, and refresh the browser. The app fetches that JSON file at runtime and falls back to an internal safe three-panel configuration if the file is missing or invalid.
+### Local Video Loop
 
-On GitHub Pages, changing `public/config/cameras.json` still requires committing, pushing, and waiting for the Pages workflow to redeploy. For exhibition use from a local machine, keep real feed details private by copying `public/config/cameras.local.example.json` to the ignored `public/config/cameras.local.json`, filling in the real URLs there, and copying those values into `public/config/cameras.json` only in the local working copy used by the exhibition display.
+Put local video files in `public/media/`, then reference them from `public/config/cameras.json`:
+
+```json
+{
+  "id": "space",
+  "sourceType": "video",
+  "src": "/soft_traces_triptych/media/example-loop.mp4",
+  "active": true,
+  "muted": true,
+  "loop": true,
+  "fallbackText": "The recording is absent."
+}
+```
+
+No video files are included by default. Use only files you made, licensed, or have permission to exhibit.
+
+### Public Webcam/Live Camera Embed
+
+Use only manually selected, permission-safe, publicly available webcam/live camera feeds:
+
+```json
+{
+  "id": "trace",
+  "sourceType": "embed",
+  "src": "REPLACE_PUBLIC_WEBCAM_EMBED_URL",
+  "active": true,
+  "fallbackText": "The distant image is unavailable."
+}
+```
+
+Do not configure feeds that show private spaces, identifiable people, or anything you do not have permission to present.
+
+### Source Pools
+
+Any panel can use a source pool:
+
+```json
+{
+  "id": "trace",
+  "fallbackText": "The distant image is unavailable.",
+  "sources": [
+    {
+      "sourceId": "public-webcam-one",
+      "sourceType": "embed",
+      "src": "REPLACE_PUBLIC_WEBCAM_EMBED_URL",
+      "active": true
+    },
+    {
+      "sourceId": "local-loop",
+      "sourceType": "video",
+      "src": "/soft_traces_triptych/media/trace-loop.mp4",
+      "active": false,
+      "muted": true,
+      "loop": true
+    }
+  ]
+}
+```
+
+The debug overlay shows which source was selected for each panel.
 
 ## Visual Modes
 
@@ -57,36 +135,8 @@ Each panel can use one of these `visualMode` values:
 
 Use `cropMode` to control framing. Supported values are `cover`, `contain`, and `stretch`.
 
-## Edit Artwork Text
+## Deploy
 
-Artwork copy lives in `src/data/exhibition.json`. Edit the title, subtitle, text fragments, privacy note, and setup note there.
+Pushes to `main` build and publish the `dist/` folder through GitHub Pages. The Vite base path is configured in `vite.config.js` for the project URL above.
 
-## Exhibition Controls
-
-Keyboard shortcuts:
-
-- `F`: toggle fullscreen-style install mode and request browser fullscreen when supported
-- `L`: toggle labels
-- `T`: toggle text fragments
-- `D`: toggle debug/config overlay
-- `O`: toggle title and privacy overlay
-
-The cursor hides after a short period of inactivity while install mode is active.
-
-## Camera Station Setup
-
-Use each iPhone, iPad, or tablet as a dedicated camera station:
-
-- Open the VDO.Ninja sender link on the device.
-- Keep the device plugged into power for the full exhibition period.
-- Use a stable mount or stand so the framing does not drift.
-- Enable Guided Access, kiosk mode, or equivalent device locking.
-- Disable notifications, calls, lock-screen previews, auto-lock, and sounds.
-- Test Wi-Fi stability in the room before the opening.
-- Use the same network conditions expected during the exhibition.
-- Avoid filming identifiable people without explicit consent.
-- Add physical signage near each camera explaining that a live camera feed is part of the artwork.
-
-## Privacy
-
-This website embeds configured VDO.Ninja viewing links only. It does not request visitor webcam or microphone access, does not record video, does not use analytics, does not set cookies, and does not store visitor data.
+For local/private exhibition operation, keep real feed details out of commits. Copy `public/config/cameras.local.example.json` to the ignored `public/config/cameras.local.json`, fill in the real URLs there, and copy those values into the local runtime `public/config/cameras.json` only on the exhibition machine.

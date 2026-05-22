@@ -1,47 +1,44 @@
 [
   {
     "id": "object",
-    "role": "Object",
-    "title": "Material Witness",
-    "subtitle": "Panel I",
-    "locationLabel": "Object table",
-    "description": "A fixed live view of a material or object.",
+    "sourceType": "vdo",
+    "src": "https://vdo.ninja/?view=REPLACE_OBJECT_STREAM_ID&cleanoutput",
     "active": true,
-    "vdoNinjaViewUrl": "https://vdo.ninja/?view=REPLACE_OBJECT_STREAM_ID&cleanoutput",
-    "fallbackText": "The material is not yet transmitting.",
-    "offlineText": "The material feed will return when the network is restored.",
+    "fallbackText": "The surface is silent.",
     "visualMode": "slow-zoom",
-    "cropMode": "cover",
-    "labelVisible": true
+    "cropMode": "cover"
   },
   {
     "id": "space",
-    "role": "Space",
-    "title": "Room Witness",
-    "subtitle": "Panel II",
-    "locationLabel": "University space",
-    "description": "A fixed live view of a room, corridor, window, or empty chair.",
+    "sourceType": "video",
+    "src": "/soft_traces_triptych/media/example-loop.mp4",
     "active": true,
-    "vdoNinjaViewUrl": "https://vdo.ninja/?view=REPLACE_SPACE_STREAM_ID&cleanoutput",
-    "fallbackText": "The room is temporarily absent.",
-    "offlineText": "The room is waiting for the network to return.",
+    "muted": true,
+    "loop": true,
+    "fallbackText": "The recording is absent.",
     "visualMode": "normal",
-    "cropMode": "cover",
-    "labelVisible": true
+    "cropMode": "cover"
   },
   {
     "id": "trace",
-    "role": "Trace",
-    "title": "Memory Witness",
-    "subtitle": "Panel III",
-    "locationLabel": "Trace station",
-    "description": "A fixed live view of shadow, reflection, movement, or a detail.",
-    "active": true,
-    "vdoNinjaViewUrl": "https://vdo.ninja/?view=REPLACE_TRACE_STREAM_ID&cleanoutput",
-    "fallbackText": "The trace has faded.",
-    "offlineText": "The trace is held until the network returns.",
+    "fallbackText": "The distant image is unavailable.",
     "visualMode": "ghosted",
     "cropMode": "cover",
-    "labelVisible": true
+    "sources": [
+      {
+        "sourceId": "public-webcam-placeholder",
+        "sourceType": "embed",
+        "src": "REPLACE_PUBLIC_WEBCAM_EMBED_URL",
+        "active": true,
+        "fallbackText": "The distant image is unavailable."
+      },
+      {
+        "sourceId": "vdo-trace-placeholder",
+        "sourceType": "vdo",
+        "src": "https://vdo.ninja/?view=REPLACE_TRACE_STREAM_ID&cleanoutput",
+        "active": false,
+        "fallbackText": "The surface is silent."
+      }
+    ]
   }
 ]

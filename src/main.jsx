@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import exhibition from './data/exhibition.json';
 import fallbackCameras from './data/fallbackCameras';
@@ -6,14 +6,45 @@ import './styles.css';
 
 const INACTIVITY_DELAY = 2600;
 const PLACEHOLDER_TOKEN = 'REPLACE_';
-const EXPECTED_CAMERA_IDS = ['object', 'space', 'trace'];
+const EXPECTED_PANEL_IDS = ['object', 'space', 'trace'];
+const SOURCE_TYPES = new Set(['vdo', 'video', 'embed']);
+
+const DEFAULT_SOURCE = {
+  sourceType: 'vdo',
+  src: '',
+  active: false,
+  muted: true,
+  loop: true,
+  fallbackText: 'The surface is silent.',
+  visualMode: 'normal',
+  cropMode: 'cover',
+};
+
+function isObject(value) {
+  return Boolean(value && typeof value === 'object' && !Array.isArray(value));
+}
+
+function isKnownSourceType(sourceType) {
+  return SOURCE_TYPES.has(sourceType);
+}
+
+function hasSourceShape(source) {
+  return isObject(source) && isKnownSourceType(source.sourceType);
+}
 
 function isValidCameraConfig(value) {
-  if (!Array.isArray(value) || value.length !== EXPECTED_CAMERA_IDS.length) {
+  if (!Array.isArray(value) || value.length !== EXPECTED_PANEL_IDS.length) {
     return false;
   }
 
-  return EXPECTED_CAMERA_IDS.every((id, index) => value[index]?.id === id);
+  return EXPECTED_PANEL_IDS.every((id, index) => {
+    const panel = value[index];
+    if (!isObject(panel) || panel.id !== id) return false;
+    if (Array.isArray(panel.sources)) {
+      return panel.sources.every(hasSourceShape);
+    }
+    return hasSourceShape(panel);
+  });
 }
 
 async function loadCameraConfig() {
@@ -30,104 +61,180 @@ async function loadCameraConfig() {
   return cameras;
 }
 
-function getPanelClass(camera) {
+function sourceLabel(source, index) {
+  return source.sourceId || source.sourceLabel || source.name || source.id || `source-${index + 1}`;
+}
+
+function selectRandomActiveSource(sources) {
+  const activeSources = sources
+    .map((source, index) => ({ source, index }))
+    .filter(({ source }) => source.active === true);
+
+  if (activeSources.length === 0) {
+    return { source: null, index: -1 };
+  }
+
+  return activeSources[Math.floor(Math.random() * activeSources.length)];
+}
+
+function normalizePanel(panel) {
+  const base = {
+    ...DEFAULT_SOURCE,
+    ...panel,
+    id: panel.id,
+  };
+  delete base.sources;
+
+  if (!Array.isArray(panel.sources)) {
+    return {
+      ...base,
+      selectedFromPool: false,
+      selectedSourceIndex: null,
+      selectedSourceLabel: sourceLabel(panel, 0),
+      sourcePoolSize: 1,
+    };
+  }
+
+  const { source, index } = selectRandomActiveSource(panel.sources);
+  if (!source) {
+    return {
+      ...base,
+      active: false,
+      src: '',
+      selectedFromPool: true,
+      selectedSourceIndex: null,
+      selectedSourceLabel: 'none',
+      sourcePoolSize: panel.sources.length,
+    };
+  }
+
+  return {
+    ...base,
+    ...source,
+    id: panel.id,
+    selectedFromPool: true,
+    selectedSourceIndex: index,
+    selectedSourceLabel: sourceLabel(source, index),
+    sourcePoolSize: panel.sources.length,
+  };
+}
+
+function normalizeCameraConfig(cameras) {
+  return cameras.map(normalizePanel);
+}
+
+function hasConfiguredSrc(panel) {
+  return Boolean(panel.src?.trim());
+}
+
+function hasPlaceholderSrc(panel) {
+  return Boolean(panel.src?.includes(PLACEHOLDER_TOKEN));
+}
+
+function canRenderSource(panel) {
+  return Boolean(
+    panel.active === true &&
+      isKnownSourceType(panel.sourceType) &&
+      hasConfiguredSrc(panel) &&
+      !hasPlaceholderSrc(panel)
+  );
+}
+
+function panelStatus(panel) {
+  if (panel.active !== true) return 'inactive';
+  if (!isKnownSourceType(panel.sourceType)) return 'unknown type';
+  if (!hasConfiguredSrc(panel)) return 'missing src';
+  if (hasPlaceholderSrc(panel)) return 'placeholder';
+  return 'selected';
+}
+
+function getPanelClass(panel) {
   return [
     'triptych-panel',
-    `panel-${camera.id}`,
-    `mode-${camera.visualMode || 'normal'}`,
-    `crop-${camera.cropMode || 'cover'}`,
-    camera.id === 'space' ? 'is-dominant' : '',
+    `panel-${panel.id}`,
+    `mode-${panel.visualMode || 'normal'}`,
+    `crop-${panel.cropMode || 'cover'}`,
+    panel.id === 'space' ? 'is-dominant' : '',
   ]
     .filter(Boolean)
     .join(' ');
 }
 
-function canShowFeed(camera) {
-  return Boolean(
-    camera.active &&
-      hasConfiguredUrl(camera) &&
-      !hasPlaceholderUrl(camera)
+function Source({ panel, onMediaError }) {
+  if (panel.sourceType === 'video') {
+    return (
+      <video
+        className="media-frame video-frame"
+        src={panel.src}
+        autoPlay
+        muted={panel.muted !== false}
+        loop={panel.loop !== false}
+        playsInline
+        onError={onMediaError}
+      />
+    );
+  }
+
+  return (
+    <iframe
+      className={`media-frame iframe-frame ${panel.sourceType}-frame`}
+      title={`${panel.id} ${panel.sourceType} source`}
+      src={panel.src}
+      allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+      referrerPolicy="no-referrer"
+    />
   );
 }
 
-function hasConfiguredUrl(camera) {
-  return Boolean(camera.vdoNinjaViewUrl?.trim());
-}
+function Panel({ panel }) {
+  const [mediaFailed, setMediaFailed] = useState(false);
 
-function hasPlaceholderUrl(camera) {
-  return Boolean(camera.vdoNinjaViewUrl?.includes(PLACEHOLDER_TOKEN));
-}
+  useEffect(() => {
+    setMediaFailed(false);
+  }, [panel.src, panel.sourceType]);
 
-function Panel({ camera, fragment, panelLabel, labelsEnabled, fragmentsEnabled, isOnline }) {
-  const showLabel = labelsEnabled && camera.labelVisible;
-  const showFeed = isOnline && canShowFeed(camera);
-  const fallbackText = isOnline ? camera.fallbackText : camera.offlineText;
+  const showSource = canRenderSource(panel) && !mediaFailed;
 
   return (
-    <section className={getPanelClass(camera)} aria-label={`${camera.role}: ${camera.title}`}>
-      <div className="feed-layer" aria-hidden={!showFeed}>
-        {showFeed ? (
-          <iframe
-            className="vdo-frame"
-            title={`${camera.title} live feed`}
-            src={camera.vdoNinjaViewUrl}
-            allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
-            referrerPolicy="no-referrer"
-          />
-        ) : null}
+    <section className={getPanelClass(panel)} aria-label={`Triptych panel ${panel.id}`}>
+      <div className="feed-layer" aria-hidden={!showSource}>
+        {showSource ? <Source panel={panel} onMediaError={() => setMediaFailed(true)} /> : null}
       </div>
 
-      {!showFeed ? (
+      {!showSource ? (
         <div className="fallback-state">
-          <span>{camera.subtitle}</span>
-          <strong>{fallbackText}</strong>
+          <span>{panel.fallbackText || DEFAULT_SOURCE.fallbackText}</span>
         </div>
       ) : null}
 
       <div className="panel-shade" />
-
-      {showLabel ? (
-        <div className="panel-label">
-          <span>{camera.subtitle}</span>
-          <strong>{panelLabel || camera.role}</strong>
-          <small>{camera.locationLabel}</small>
-        </div>
-      ) : null}
-
-      {fragmentsEnabled && fragment ? (
-        <p className="text-fragment">{fragment}</p>
-      ) : null}
     </section>
   );
 }
 
-function DebugOverlay({
-  cameras,
-  configError,
-  configSource,
-  labelsEnabled,
-  fragmentsEnabled,
-  installMode,
-  browserFullscreen,
-  isOnline,
-}) {
-  const placeholderCameras = cameras.filter(hasPlaceholderUrl);
+function sourceSummary(panel) {
+  const poolDetail =
+    panel.selectedFromPool && panel.selectedSourceIndex !== null
+      ? `pool ${panel.selectedSourceIndex + 1}/${panel.sourcePoolSize}`
+      : panel.selectedFromPool
+        ? `pool none/${panel.sourcePoolSize}`
+        : 'single';
 
+  return `${panel.sourceType || 'none'} / ${poolDetail} / ${panelStatus(panel)}`;
+}
+
+function DebugOverlay({ panels, configError, configSource, installMode, browserFullscreen, isOnline }) {
   return (
     <aside className="debug-overlay" aria-label="Configuration overlay">
-      <h2>Configuration</h2>
+      <h2>Debug</h2>
       <dl>
         <div>
           <dt>Panels</dt>
-          <dd>{cameras.length}</dd>
+          <dd>{panels.length}</dd>
         </div>
         <div>
-          <dt>Labels</dt>
-          <dd>{labelsEnabled ? 'visible' : 'hidden'}</dd>
-        </div>
-        <div>
-          <dt>Text</dt>
-          <dd>{fragmentsEnabled ? 'visible' : 'hidden'}</dd>
+          <dt>Config</dt>
+          <dd>{configSource === 'runtime' ? 'runtime config' : 'internal fallback'}</dd>
         </div>
         <div>
           <dt>Install mode</dt>
@@ -141,25 +248,16 @@ function DebugOverlay({
           <dt>Network</dt>
           <dd>{isOnline ? 'online' : 'offline'}</dd>
         </div>
-        <div>
-          <dt>Camera config</dt>
-          <dd>{configSource === 'runtime' ? 'runtime config' : 'internal fallback'}</dd>
-        </div>
       </dl>
-      <p>{exhibition.setupNote}</p>
-      {configError ? (
-        <p className="debug-warning">{configError}</p>
-      ) : null}
-      {placeholderCameras.length > 0 ? (
-        <p className="debug-warning">
-          Placeholder feed URL still configured for: {placeholderCameras.map((camera) => camera.id).join(', ')}.
-        </p>
-      ) : null}
+
+      {configError ? <p className="debug-warning">{configError}</p> : null}
+
       <ul>
-        {cameras.map((camera) => (
-          <li key={camera.id}>
-            <span>{camera.id}</span>
-            <strong>{canShowFeed(camera) ? camera.visualMode : 'fallback'}</strong>
+        {panels.map((panel) => (
+          <li key={panel.id}>
+            <span>{panel.id}</span>
+            <strong>{sourceSummary(panel)}</strong>
+            <small>{panel.selectedSourceLabel}</small>
           </li>
         ))}
       </ul>
@@ -168,24 +266,14 @@ function DebugOverlay({
 }
 
 function App() {
-  const [cameras, setCameras] = useState(fallbackCameras);
+  const [panels, setPanels] = useState(() => normalizeCameraConfig(fallbackCameras));
   const [configSource, setConfigSource] = useState('internal-fallback');
   const [configError, setConfigError] = useState('');
-  const [labelsEnabled, setLabelsEnabled] = useState(true);
-  const [fragmentsEnabled, setFragmentsEnabled] = useState(true);
   const [debugEnabled, setDebugEnabled] = useState(false);
   const [installMode, setInstallMode] = useState(true);
-  const [overlayEnabled, setOverlayEnabled] = useState(true);
   const [cursorHidden, setCursorHidden] = useState(false);
   const [browserFullscreen, setBrowserFullscreen] = useState(false);
   const [isOnline, setIsOnline] = useState(() => navigator.onLine);
-
-  const fragmentsByPanel = useMemo(() => {
-    return exhibition.textFragments.reduce((map, fragment) => {
-      map[fragment.panel] = fragment.text;
-      return map;
-    }, {});
-  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -193,13 +281,13 @@ function App() {
     loadCameraConfig()
       .then((runtimeCameras) => {
         if (!isMounted) return;
-        setCameras(runtimeCameras);
+        setPanels(normalizeCameraConfig(runtimeCameras));
         setConfigSource('runtime');
         setConfigError('');
       })
       .catch((error) => {
         if (!isMounted) return;
-        setCameras(fallbackCameras);
+        setPanels(normalizeCameraConfig(fallbackCameras));
         setConfigSource('internal-fallback');
         setConfigError(error instanceof Error ? error.message : 'Camera config could not be loaded.');
       });
@@ -242,10 +330,7 @@ function App() {
     function handleKeyDown(event) {
       const key = event.key.toLowerCase();
       if (key === 'f') toggleFullscreenStyle();
-      if (key === 'l') setLabelsEnabled((value) => !value);
-      if (key === 't') setFragmentsEnabled((value) => !value);
       if (key === 'd') setDebugEnabled((value) => !value);
-      if (key === 'o') setOverlayEnabled((value) => !value);
     }
 
     window.addEventListener('keydown', handleKeyDown);
@@ -305,37 +390,19 @@ function App() {
 
   return (
     <main className={`installation ${installMode ? 'install-mode' : ''} ${cursorHidden ? 'hide-cursor' : ''}`}>
-      <div className="triptych" aria-label={exhibition.title}>
-        {cameras.map((camera) => (
-          <Panel
-            key={camera.id}
-            camera={camera}
-            fragment={fragmentsByPanel[camera.id]}
-            panelLabel={exhibition.triptychLabels[camera.id]}
-            labelsEnabled={labelsEnabled}
-            fragmentsEnabled={fragmentsEnabled}
-            isOnline={isOnline}
-          />
+      <div className="triptych" aria-label="Soft Traces triptych">
+        {panels.map((panel) => (
+          <Panel key={panel.id} panel={panel} />
         ))}
       </div>
 
-      {overlayEnabled ? (
-        <header className="work-overlay">
-          <div>
-            <p>{exhibition.subtitle}</p>
-            <h1>{exhibition.title}</h1>
-          </div>
-          <p className="privacy-note">{exhibition.privacyNote}</p>
-        </header>
-      ) : null}
+      <p className="work-sentence">{exhibition.sentence}</p>
 
       {debugEnabled ? (
         <DebugOverlay
-          cameras={cameras}
+          panels={panels}
           configError={configError}
           configSource={configSource}
-          labelsEnabled={labelsEnabled}
-          fragmentsEnabled={fragmentsEnabled}
           installMode={installMode}
           browserFullscreen={browserFullscreen}
           isOnline={isOnline}
