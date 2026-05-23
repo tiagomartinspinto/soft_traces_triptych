@@ -39,6 +39,14 @@ function isLocalSetupHost() {
   return LOCAL_SETUP_HOSTS.has(window.location.hostname);
 }
 
+function makeArtworkUrl(configUpdated) {
+  const artworkUrl = new URL(joinBasePath(), window.location.origin);
+  if (configUpdated) {
+    artworkUrl.searchParams.set('configUpdated', String(configUpdated));
+  }
+  return artworkUrl.toString();
+}
+
 async function loadRuntimeCameraConfig() {
   const response = await fetch(`${BASE_URL}config/cameras.json`, { cache: 'no-cache' });
   if (!response.ok) {
@@ -551,6 +559,11 @@ function PanelEditor({ panel, panelIndex, onPanelChange, onSourceChange, onModeC
             </button>
           </div>
 
+          <p className="editor-warning">
+            Artwork randomly selects one active source from this pool on page load. For testing, use single source or
+            deactivate other pool sources.
+          </p>
+
           {panel.sources.map((source, sourceIndex) => (
             <article className="pool-source" key={`${panel.id}-${sourceIndex}`}>
               <div className="pool-source-heading">
@@ -580,6 +593,7 @@ function EditorPage({ navigate }) {
   const [notice, setNotice] = useState('Checking local save server.');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [lastSavedAt, setLastSavedAt] = useState(null);
   const fileInputRef = useRef(null);
   const validation = useMemo(() => validateCameraConfigDetailed(config), [config]);
   const editablePanels = Array.isArray(config) ? config : [];
@@ -641,6 +655,7 @@ function EditorPage({ navigate }) {
   }, []);
 
   function updatePanel(panelIndex, updater) {
+    setLastSavedAt(null);
     setConfig((currentConfig) =>
       currentConfig.map((panel, index) => {
         if (index !== panelIndex) return panel;
@@ -738,7 +753,9 @@ function EditorPage({ navigate }) {
       if (!response.ok) {
         throw new Error(payload.error || 'Save failed.');
       }
-      setNotice('Saved to public/config/cameras.json.');
+      const savedAt = Date.now();
+      setLastSavedAt(savedAt);
+      setNotice('Saved to public/config/cameras.json. Refresh the artwork tab or open refreshed artwork.');
     } catch (error) {
       setNotice(error instanceof Error ? error.message : 'Save failed.');
     } finally {
@@ -765,6 +782,7 @@ function EditorPage({ navigate }) {
       const text = await file.text();
       const parsedConfig = JSON.parse(text);
       setConfig(parsedConfig);
+      setLastSavedAt(null);
       const result = validateCameraConfigDetailed(parsedConfig);
       setNotice(result.valid ? 'Imported JSON.' : 'Imported JSON. Fix validation errors before saving.');
     } catch {
@@ -772,6 +790,14 @@ function EditorPage({ navigate }) {
     } finally {
       event.target.value = '';
     }
+  }
+
+  function openArtworkPreview() {
+    window.open(makeArtworkUrl(), '_blank', 'noopener,noreferrer');
+  }
+
+  function openRefreshedArtwork() {
+    window.open(makeArtworkUrl(lastSavedAt || Date.now()), '_blank', 'noopener,noreferrer');
   }
 
   return (
@@ -811,6 +837,14 @@ function EditorPage({ navigate }) {
           <button type="button" onClick={handleExport}>
             export JSON
           </button>
+          <button type="button" onClick={openArtworkPreview}>
+            preview artwork
+          </button>
+          {lastSavedAt ? (
+            <button type="button" onClick={openRefreshedArtwork}>
+              open refreshed artwork
+            </button>
+          ) : null}
           <button type="button" onClick={handleSave} disabled={!apiAvailable || !validation.valid || isSaving}>
             {isSaving ? 'saving' : 'save local'}
           </button>

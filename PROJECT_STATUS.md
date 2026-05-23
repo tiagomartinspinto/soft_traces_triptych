@@ -21,6 +21,11 @@
 - Added YouTube embed detection for `youtube.com/embed/` and `youtube-nocookie.com/embed/` URLs.
 - Updated iframe handling so YouTube embeds use `strict-origin-when-cross-origin` and `allowFullScreen`.
 - Kept non-YouTube embeds and VDO.Ninja on the stricter `no-referrer` iframe policy.
+- Added editor post-save guidance telling the user to refresh the artwork tab or open refreshed artwork.
+- Added an `open refreshed artwork` editor button after successful local save, using `configUpdated=TIMESTAMP`.
+- Added a `preview artwork` editor toolbar button.
+- Added an editor warning for source pools explaining random active-source selection on artwork page load.
+- Converted saved YouTube `/live/` URLs in `public/config/cameras.json` to `youtube-nocookie.com/embed/` URLs.
 - Added a localhost-only Node/Express server for local exhibition setup.
 - Added `npm run local`.
 - Added local API endpoints:
@@ -61,6 +66,7 @@
 - Public embed availability depends on the selected provider and browser iframe permissions.
 - YouTube videos and live streams may still refuse embedding if embedding is disabled by the owner or blocked by YouTube.
 - YouTube watch-page URLs are not supported as embeds; use `/embed/` URLs.
+- Artwork tabs do not update automatically after editor saves; refresh the artwork tab or use `open refreshed artwork`.
 - The editor can preview only sources the browser/provider allows inside the page.
 - If the local API is unavailable, editor saving is disabled by design; import/export still works.
 - The `/editor` route remains available directly, but saving still requires the local API from `npm run local`.
@@ -86,6 +92,9 @@
 - Ran `npm run build` after making the `sources` button localhost-only.
 - Ran `npm run build` after adding YouTube iframe handling.
 - Checked YouTube embed URL detection with a `youtube-nocookie.com/embed/` sample.
+- Ran `npm run build` after adding refreshed artwork workflow.
+- Confirmed local editor save shows the refreshed-artwork guidance and button.
+- Confirmed the YouTube URLs currently in `public/config/cameras.json` are detected as YouTube embed URLs.
 - Ran tracked-file provenance scan after cleanup.
 
 ## Manual Tests To Do Next
@@ -99,5 +108,6 @@
 - Test one manually selected publicly available webcam/live camera embed.
 - Test the intended YouTube embed URLs on the exhibition browser and network.
 - Prefer local video files for the most stable exhibition playback.
+- After saving in the local editor, use `open refreshed artwork` and confirm the artwork tab loads the latest config.
 - Confirm no configured source shows private spaces, identifiable people, or anything without permission to present.
 - Reopen the public artwork on the exhibition display and confirm the `sources` footer button is visually quiet enough for the install.

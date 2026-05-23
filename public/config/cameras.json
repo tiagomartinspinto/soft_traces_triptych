@@ -1,9 +1,9 @@
 [
   {
     "id": "object",
-    "sourceType": "vdo",
-    "src": "https://vdo.ninja/?view=ns2rCQH&pw=1030928",
-    "active": true,
+    "sourceType": "embed",
+    "src": "https://www.youtube-nocookie.com/embed/CvOB-Is_yYU?autoplay=1&mute=1&controls=0&playsinline=1",
+    "active": false,
     "fallbackText": "The surface is silent.",
     "visualMode": "slow-zoom",
     "cropMode": "stretch"
@@ -12,7 +12,7 @@
     "id": "space",
     "sourceType": "vdo",
     "src": "https://vdo.ninja/?view=ns2rCQH&pw=1030928",
-    "active": true,
+    "active": false,
     "muted": true,
     "loop": true,
     "fallbackText": "The recording is absent.",
@@ -27,9 +27,9 @@
     "sources": [
       {
         "sourceId": "trace-source-1",
-        "sourceType": "vdo",
-        "src": "https://vdo.ninja/?view=ns2rCQH&pw=1030928",
-        "active": true,
+        "sourceType": "embed",
+        "src": "https://www.youtube-nocookie.com/embed/CvOB-Is_yYU?autoplay=1&mute=1&controls=0&playsinline=1",
+        "active": false,
         "fallbackText": "The distant image is unavailable."
       }
     ]
