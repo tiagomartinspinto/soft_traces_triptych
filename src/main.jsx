@@ -12,6 +12,7 @@ import {
   cloneConfig,
   hasPlaceholderSrc,
   isValidCameraConfig,
+  isYouTubeEmbed,
   normalizeCameraConfig,
   panelStatus,
   validateCameraConfigDetailed,
@@ -79,13 +80,16 @@ function Source({ panel, onMediaError }) {
     );
   }
 
+  const isYouTubeSource = panel.sourceType === 'embed' && isYouTubeEmbed(panel.src);
+
   return (
     <iframe
       className={`media-frame iframe-frame ${panel.sourceType}-frame`}
       title={`${panel.id} ${panel.sourceType} source`}
       src={panel.src}
       allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
-      referrerPolicy="no-referrer"
+      referrerPolicy={isYouTubeSource ? 'strict-origin-when-cross-origin' : 'no-referrer'}
+      allowFullScreen={isYouTubeSource}
     />
   );
 }

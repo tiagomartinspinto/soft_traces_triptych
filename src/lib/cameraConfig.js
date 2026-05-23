@@ -35,6 +35,23 @@ export function hasPlaceholderSrc(panel) {
   return Boolean(typeof panel.src === 'string' && panel.src.includes(PLACEHOLDER_TOKEN));
 }
 
+export function isYouTubeEmbed(src) {
+  if (typeof src !== 'string' || !src.trim()) {
+    return false;
+  }
+
+  try {
+    const url = new URL(src);
+    const hostname = url.hostname.replace(/^www\./, '');
+    return (
+      (hostname === 'youtube.com' || hostname.endsWith('.youtube.com') || hostname === 'youtube-nocookie.com') &&
+      url.pathname.startsWith('/embed/')
+    );
+  } catch {
+    return /(?:^|\/\/)(?:[\w-]+\.)?(?:youtube\.com|youtube-nocookie\.com)\/embed\//i.test(src);
+  }
+}
+
 export function canRenderSource(panel) {
   return Boolean(
     panel.active === true &&

@@ -134,6 +134,16 @@ Use only manually selected, permission-safe, publicly available webcam/live came
 
 Do not configure feeds that show private spaces, identifiable people, or anything you do not have permission to present.
 
+### YouTube Embeds
+
+YouTube sources must use embed URLs, not watch-page URLs. Recommended format:
+
+```text
+https://www.youtube-nocookie.com/embed/VIDEO_ID?autoplay=1&mute=1&controls=0&playsinline=1
+```
+
+Some videos and live streams still cannot be embedded if the owner disables embedding or YouTube blocks it. Local video files are still the most stable option for exhibition playback.
+
 ## Private Local Config
 
 For local/private exhibition operation, keep real feed details out of commits. Copy `public/config/cameras.local.example.json` to the ignored `public/config/cameras.local.json`, fill in the real URLs there, and import/export or copy those values into `public/config/cameras.json` on the exhibition machine.

@@ -18,6 +18,9 @@
 - Added a small transient Terminal hint after pressing `sources`.
 - Restricted the `sources` footer button to `localhost` and `127.0.0.1` only.
 - Hid the `sources` footer button on GitHub Pages and other public hosts.
+- Added YouTube embed detection for `youtube.com/embed/` and `youtube-nocookie.com/embed/` URLs.
+- Updated iframe handling so YouTube embeds use `strict-origin-when-cross-origin` and `allowFullScreen`.
+- Kept non-YouTube embeds and VDO.Ninja on the stricter `no-referrer` iframe policy.
 - Added a localhost-only Node/Express server for local exhibition setup.
 - Added `npm run local`.
 - Added local API endpoints:
@@ -41,6 +44,7 @@
 - `src/main.jsx`
 - `src/styles.css`
 - `src/lib/cameraConfig.js`
+- `public/config/cameras.json`
 
 ## Remaining Tasks
 
@@ -55,6 +59,8 @@
 
 - VDO.Ninja iframe error screens are controlled by the embedded service when an invalid non-placeholder stream ID is used.
 - Public embed availability depends on the selected provider and browser iframe permissions.
+- YouTube videos and live streams may still refuse embedding if embedding is disabled by the owner or blocked by YouTube.
+- YouTube watch-page URLs are not supported as embeds; use `/embed/` URLs.
 - The editor can preview only sources the browser/provider allows inside the page.
 - If the local API is unavailable, editor saving is disabled by design; import/export still works.
 - The `/editor` route remains available directly, but saving still requires the local API from `npm run local`.
@@ -78,6 +84,9 @@
 - Confirmed `/editor` renders three editor panels.
 - Confirmed local save is enabled when `npm run local` is running.
 - Ran `npm run build` after making the `sources` button localhost-only.
+- Ran `npm run build` after adding YouTube iframe handling.
+- Checked YouTube embed URL detection with a `youtube-nocookie.com/embed/` sample.
+- Ran tracked-file provenance scan after cleanup.
 
 ## Manual Tests To Do Next
 
@@ -88,5 +97,7 @@
 - Test one real VDO.Ninja feed.
 - Test one local video file under `public/media/`.
 - Test one manually selected publicly available webcam/live camera embed.
+- Test the intended YouTube embed URLs on the exhibition browser and network.
+- Prefer local video files for the most stable exhibition playback.
 - Confirm no configured source shows private spaces, identifiable people, or anything without permission to present.
 - Reopen the public artwork on the exhibition display and confirm the `sources` footer button is visually quiet enough for the install.

@@ -2,42 +2,35 @@
   {
     "id": "object",
     "sourceType": "vdo",
-    "src": "https://vdo.ninja/?view=REPLACE_OBJECT_STREAM_ID&cleanoutput",
+    "src": "https://vdo.ninja/?view=ns2rCQH&pw=1030928",
     "active": true,
     "fallbackText": "The surface is silent.",
     "visualMode": "slow-zoom",
-    "cropMode": "cover"
+    "cropMode": "stretch"
   },
   {
     "id": "space",
-    "sourceType": "video",
-    "src": "/soft_traces_triptych/media/example-loop.mp4",
+    "sourceType": "vdo",
+    "src": "https://vdo.ninja/?view=ns2rCQH&pw=1030928",
     "active": true,
     "muted": true,
     "loop": true,
     "fallbackText": "The recording is absent.",
     "visualMode": "normal",
-    "cropMode": "cover"
+    "cropMode": "stretch"
   },
   {
     "id": "trace",
     "fallbackText": "The distant image is unavailable.",
     "visualMode": "ghosted",
-    "cropMode": "cover",
+    "cropMode": "stretch",
     "sources": [
       {
-        "sourceId": "public-webcam-placeholder",
-        "sourceType": "embed",
-        "src": "REPLACE_PUBLIC_WEBCAM_EMBED_URL",
+        "sourceId": "trace-source-1",
+        "sourceType": "vdo",
+        "src": "https://vdo.ninja/?view=ns2rCQH&pw=1030928",
         "active": true,
         "fallbackText": "The distant image is unavailable."
-      },
-      {
-        "sourceId": "vdo-trace-placeholder",
-        "sourceType": "vdo",
-        "src": "https://vdo.ninja/?view=REPLACE_TRACE_STREAM_ID&cleanoutput",
-        "active": false,
-        "fallbackText": "The surface is silent."
       }
     ]
   }
