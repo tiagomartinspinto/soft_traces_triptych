@@ -21,6 +21,7 @@ import './styles.css';
 const INACTIVITY_DELAY = 2600;
 const API_CONFIG_PATH = '/api/config/cameras';
 const BASE_URL = import.meta.env.BASE_URL || '/';
+const LOCAL_SETUP_HOSTS = new Set(['localhost', '127.0.0.1']);
 
 function joinBasePath(path = '') {
   const base = BASE_URL.endsWith('/') ? BASE_URL : `${BASE_URL}/`;
@@ -31,6 +32,10 @@ function getRouteFromLocation() {
   const currentPath = window.location.pathname.replace(/\/+$/, '');
   const editorPath = joinBasePath('editor').replace(/\/+$/, '');
   return currentPath === editorPath ? 'editor' : 'artwork';
+}
+
+function isLocalSetupHost() {
+  return LOCAL_SETUP_HOSTS.has(window.location.hostname);
 }
 
 async function loadRuntimeCameraConfig() {
@@ -165,6 +170,7 @@ function DebugOverlay({ panels, configError, configSource, installMode, browserF
 }
 
 function ArtworkPage() {
+  const canShowSourcesButton = isLocalSetupHost();
   const [panels, setPanels] = useState(() => normalizeCameraConfig(fallbackCameras));
   const [configSource, setConfigSource] = useState('internal-fallback');
   const [configError, setConfigError] = useState('');
@@ -309,11 +315,19 @@ function ArtworkPage() {
 
       <p className="work-sentence">{exhibition.sentence}</p>
 
-      <a className="sources-button" href={joinBasePath('editor')} target="_blank" rel="noreferrer" onClick={showSetupPrompt}>
-        sources
-      </a>
+      {canShowSourcesButton ? (
+        <a
+          className="sources-button"
+          href={joinBasePath('editor')}
+          target="_blank"
+          rel="noreferrer"
+          onClick={showSetupPrompt}
+        >
+          sources
+        </a>
+      ) : null}
 
-      {setupPromptVisible ? (
+      {canShowSourcesButton && setupPromptVisible ? (
         <div className="setup-prompt" role="status" aria-live="polite">
           <span>For local saving, run in Terminal:</span>
           <code>npm install</code>

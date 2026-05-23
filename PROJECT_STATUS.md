@@ -16,6 +16,8 @@
 - Added import JSON and export/download JSON controls.
 - Simplified the public `sources` button so it opens `/editor` in a separate tab/window instead of replacing the artwork view.
 - Added a small transient Terminal hint after pressing `sources`.
+- Restricted the `sources` footer button to `localhost` and `127.0.0.1` only.
+- Hid the `sources` footer button on GitHub Pages and other public hosts.
 - Added a localhost-only Node/Express server for local exhibition setup.
 - Added `npm run local`.
 - Added local API endpoints:
@@ -55,6 +57,7 @@
 - Public embed availability depends on the selected provider and browser iframe permissions.
 - The editor can preview only sources the browser/provider allows inside the page.
 - If the local API is unavailable, editor saving is disabled by design; import/export still works.
+- The `/editor` route remains available directly, but saving still requires the local API from `npm run local`.
 - If `public/config/cameras.json` is missing, unreachable, malformed, or does not contain exactly `object`, `space`, and `trace` in order, the app uses the internal fallback config with no media sources.
 - Browser fullscreen requires a user gesture. Press `F` on the display keyboard or use browser/display fullscreen controls.
 - Example local video paths do not include actual video files; absent local videos fall back after the browser reports a media load error.
@@ -74,6 +77,7 @@
 - Confirmed the `sources` button shows the Terminal hint for `npm install` and `npm run local`.
 - Confirmed `/editor` renders three editor panels.
 - Confirmed local save is enabled when `npm run local` is running.
+- Ran `npm run build` after making the `sources` button localhost-only.
 
 ## Manual Tests To Do Next
 

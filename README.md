@@ -18,13 +18,15 @@ npm run build
 npm run preview
 ```
 
-The normal public artwork view intentionally shows only the triptych, one configurable sentence, and a small centered `sources` button at the bottom. The sentence is edited in `src/data/exhibition.json`.
+The normal public artwork view intentionally shows only the triptych and one configurable sentence. During local setup on `localhost` or `127.0.0.1`, it also shows a small centered `sources` button at the bottom. The sentence is edited in `src/data/exhibition.json`.
 
 The app does not request visitor webcam or microphone access, does not use visitor URL parameter feed overrides, does not use analytics, does not set cookies, and does not track visitors.
 
 ## Local Source Editor
 
-The `sources` button opens the editor route at `/editor` in a separate tab/window and briefly shows a small Terminal hint:
+The `sources` button appears only when the app is running on `localhost` or `127.0.0.1`. It is hidden on GitHub Pages and other public hosts.
+
+When visible, the button opens the editor route at `/editor` in a separate tab/window and briefly shows a small Terminal hint:
 
 ```bash
 npm install
@@ -32,6 +34,8 @@ npm run local
 ```
 
 It is intentionally quiet in the artwork view: small, centered, low opacity, and safe to ignore during display.
+
+The `/editor` route can still be opened directly. Saving remains disabled unless the local API from `npm run local` is available.
 
 The editor can:
 
@@ -158,4 +162,4 @@ Supported `cropMode` values:
 
 The public artwork remains safe for GitHub Pages because the save API exists only in `npm run local`. Visitors cannot change feeds through URL parameters, and there is no public admin backend.
 
-For exhibition display, open the artwork route and avoid clicking `sources`. If clicked, the artwork stays in place while the editor opens separately. If the footer button is unwanted for a particular install, it can be hidden with local CSS on the exhibition machine without changing source behavior.
+For exhibition display, open the artwork route on the public host; the `sources` button is hidden there. During local setup, the artwork stays in place when `sources` is clicked while the editor opens separately.
