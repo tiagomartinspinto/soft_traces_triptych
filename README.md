@@ -24,7 +24,14 @@ The app does not request visitor webcam or microphone access, does not use visit
 
 ## Local Source Editor
 
-The `sources` button opens the local editor route at `/editor`. It is intentionally quiet in the artwork view: small, centered, low opacity, and safe to ignore during display.
+The `sources` button opens the editor route at `/editor` in a separate tab/window and briefly shows a small Terminal hint:
+
+```bash
+npm install
+npm run local
+```
+
+It is intentionally quiet in the artwork view: small, centered, low opacity, and safe to ignore during display.
 
 The editor can:
 
@@ -151,4 +158,4 @@ Supported `cropMode` values:
 
 The public artwork remains safe for GitHub Pages because the save API exists only in `npm run local`. Visitors cannot change feeds through URL parameters, and there is no public admin backend.
 
-For exhibition display, open the artwork route and avoid clicking `sources`. If the footer button is unwanted for a particular install, it can be hidden with local CSS on the exhibition machine without changing source behavior.
+For exhibition display, open the artwork route and avoid clicking `sources`. If clicked, the artwork stays in place while the editor opens separately. If the footer button is unwanted for a particular install, it can be hidden with local CSS on the exhibition machine without changing source behavior.

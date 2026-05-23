@@ -164,7 +164,7 @@ function DebugOverlay({ panels, configError, configSource, installMode, browserF
   );
 }
 
-function ArtworkPage({ navigate }) {
+function ArtworkPage() {
   const [panels, setPanels] = useState(() => normalizeCameraConfig(fallbackCameras));
   const [configSource, setConfigSource] = useState('internal-fallback');
   const [configError, setConfigError] = useState('');
@@ -173,6 +173,7 @@ function ArtworkPage({ navigate }) {
   const [cursorHidden, setCursorHidden] = useState(false);
   const [browserFullscreen, setBrowserFullscreen] = useState(false);
   const [isOnline, setIsOnline] = useState(() => navigator.onLine);
+  const [setupPromptVisible, setSetupPromptVisible] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -287,6 +288,17 @@ function ArtworkPage({ navigate }) {
     };
   }, [installMode]);
 
+  useEffect(() => {
+    if (!setupPromptVisible) return undefined;
+
+    const timerId = window.setTimeout(() => setSetupPromptVisible(false), 7600);
+    return () => window.clearTimeout(timerId);
+  }, [setupPromptVisible]);
+
+  function showSetupPrompt() {
+    setSetupPromptVisible(true);
+  }
+
   return (
     <main className={`installation ${installMode ? 'install-mode' : ''} ${cursorHidden ? 'hide-cursor' : ''}`}>
       <div className="triptych" aria-label="Soft Traces triptych">
@@ -297,9 +309,17 @@ function ArtworkPage({ navigate }) {
 
       <p className="work-sentence">{exhibition.sentence}</p>
 
-      <button type="button" className="sources-button" onClick={() => navigate('editor')}>
+      <a className="sources-button" href={joinBasePath('editor')} target="_blank" rel="noreferrer" onClick={showSetupPrompt}>
         sources
-      </button>
+      </a>
+
+      {setupPromptVisible ? (
+        <div className="setup-prompt" role="status" aria-live="polite">
+          <span>For local saving, run in Terminal:</span>
+          <code>npm install</code>
+          <code>npm run local</code>
+        </div>
+      ) : null}
 
       {debugEnabled ? (
         <DebugOverlay
@@ -836,7 +856,7 @@ function App() {
     setRoute(nextRoute);
   }
 
-  return route === 'editor' ? <EditorPage navigate={navigate} /> : <ArtworkPage navigate={navigate} />;
+  return route === 'editor' ? <EditorPage navigate={navigate} /> : <ArtworkPage />;
 }
 
 createRoot(document.getElementById('root')).render(<App />);

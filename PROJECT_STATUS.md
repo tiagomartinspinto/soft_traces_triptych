@@ -14,6 +14,8 @@
 - Added warnings for placeholder `REPLACE_` sources.
 - Added warnings for publicly available webcam/live camera feeds that may show private spaces or identifiable people.
 - Added import JSON and export/download JSON controls.
+- Simplified the public `sources` button so it opens `/editor` in a separate tab/window instead of replacing the artwork view.
+- Added a small transient Terminal hint after pressing `sources`.
 - Added a localhost-only Node/Express server for local exhibition setup.
 - Added `npm run local`.
 - Added local API endpoints:
@@ -68,7 +70,8 @@
 - Confirmed the artwork route renders exactly three panels.
 - Confirmed the artwork route includes the configured sentence.
 - Confirmed the artwork route includes one centered `sources` button.
-- Clicked `sources` and confirmed it opens `/editor`.
+- Clicked `sources` and confirmed it opens `/editor` separately while the artwork page remains in place.
+- Confirmed the `sources` button shows the Terminal hint for `npm install` and `npm run local`.
 - Confirmed `/editor` renders three editor panels.
 - Confirmed local save is enabled when `npm run local` is running.
 
