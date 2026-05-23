@@ -4,35 +4,66 @@ Fullscreen React/Vite installation for three manually configured image sources. 
 
 Live Pages URL: https://tiagomartinspinto.github.io/soft_traces_triptych/
 
-## Run Locally
+## Run The Public App
 
 ```bash
 npm install
 npm run dev
 ```
 
-For an exhibition build:
+For a static exhibition build:
 
 ```bash
 npm run build
 npm run preview
 ```
 
-## Exhibition Interface
+The normal public artwork view intentionally shows only the triptych, one configurable sentence, and a small centered `sources` button at the bottom. The sentence is edited in `src/data/exhibition.json`.
 
-The normal exhibition interface intentionally shows only one sentence over the triptych:
+The app does not request visitor webcam or microphone access, does not use visitor URL parameter feed overrides, does not use analytics, does not set cookies, and does not track visitors.
 
-> A surface keeps listening after the hand has moved away.
+## Local Source Editor
 
-Edit that sentence in `src/data/exhibition.json`.
+The `sources` button opens the local editor route at `/editor`. It is intentionally quiet in the artwork view: small, centered, low opacity, and safe to ignore during display.
 
-Debug mode is available with `D`. Fullscreen mode is available with `F`. The old label/text/overlay shortcuts are disabled so the public view stays minimal.
+The editor can:
 
-The site does not request visitor webcam or microphone access, does not record video, does not use analytics, does not set cookies, and does not store visitor data.
+- View the three required panels: `object`, `space`, `trace`.
+- Switch a panel between a single source and a source pool.
+- Edit `sourceType`, `src`, `active`, `fallbackText`, `visualMode`, and `cropMode`.
+- Add and remove sources in a panel source pool.
+- Preview the current source when the browser can render it.
+- Warn about `REPLACE_` placeholders.
+- Warn when a publicly available webcam/live camera feed may show private spaces or identifiable people.
+- Import JSON and export/download JSON that matches `public/config/cameras.json`.
+- Toggle dark/light mode for the editor only.
+
+If the local save API is unavailable, the editor still works in static mode with import/export JSON. Saving is disabled and the editor shows a message explaining that `npm run local` is needed.
+
+## Run The Local Editor Server
+
+```bash
+npm run local
+```
+
+This starts a localhost-only Node/Express server that serves the Vite app and exposes:
+
+- `GET /api/config/cameras`
+- `POST /api/config/cameras`
+
+`POST` validates the config and writes only to `public/config/cameras.json`.
+
+The local editor server is intended only for trusted local exhibition setup. Do not expose it publicly.
 
 ## Configure Sources
 
-Camera configuration is loaded at runtime from `public/config/cameras.json`. Keep exactly three panels, in this order:
+Runtime source configuration lives in:
+
+```text
+public/config/cameras.json
+```
+
+Keep exactly three panels, in this order:
 
 - `object`
 - `space`
@@ -92,38 +123,15 @@ Use only manually selected, permission-safe, publicly available webcam/live came
 
 Do not configure feeds that show private spaces, identifiable people, or anything you do not have permission to present.
 
-### Source Pools
+## Private Local Config
 
-Any panel can use a source pool:
+For local/private exhibition operation, keep real feed details out of commits. Copy `public/config/cameras.local.example.json` to the ignored `public/config/cameras.local.json`, fill in the real URLs there, and import/export or copy those values into `public/config/cameras.json` on the exhibition machine.
 
-```json
-{
-  "id": "trace",
-  "fallbackText": "The distant image is unavailable.",
-  "sources": [
-    {
-      "sourceId": "public-webcam-one",
-      "sourceType": "embed",
-      "src": "REPLACE_PUBLIC_WEBCAM_EMBED_URL",
-      "active": true
-    },
-    {
-      "sourceId": "local-loop",
-      "sourceType": "video",
-      "src": "/soft_traces_triptych/media/trace-loop.mp4",
-      "active": false,
-      "muted": true,
-      "loop": true
-    }
-  ]
-}
-```
-
-The debug overlay shows which source was selected for each panel.
+On GitHub Pages, changing `public/config/cameras.json` still requires a commit, push, and redeploy.
 
 ## Visual Modes
 
-Each panel can use one of these `visualMode` values:
+Supported `visualMode` values:
 
 - `normal`
 - `cropped`
@@ -133,10 +141,14 @@ Each panel can use one of these `visualMode` values:
 - `dimmed`
 - `slow-zoom`
 
-Use `cropMode` to control framing. Supported values are `cover`, `contain`, and `stretch`.
+Supported `cropMode` values:
 
-## Deploy
+- `cover`
+- `contain`
+- `stretch`
 
-Pushes to `main` build and publish the `dist/` folder through GitHub Pages. The Vite base path is configured in `vite.config.js` for the project URL above.
+## Deployment Notes
 
-For local/private exhibition operation, keep real feed details out of commits. Copy `public/config/cameras.local.example.json` to the ignored `public/config/cameras.local.json`, fill in the real URLs there, and copy those values into the local runtime `public/config/cameras.json` only on the exhibition machine.
+The public artwork remains safe for GitHub Pages because the save API exists only in `npm run local`. Visitors cannot change feeds through URL parameters, and there is no public admin backend.
+
+For exhibition display, open the artwork route and avoid clicking `sources`. If the footer button is unwanted for a particular install, it can be hidden with local CSS on the exhibition machine without changing source behavior.

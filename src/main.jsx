@@ -1,54 +1,40 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import exhibition from './data/exhibition.json';
 import fallbackCameras from './data/fallbackCameras';
+import {
+  CROP_MODES,
+  DEFAULT_SOURCE,
+  EXPECTED_PANEL_IDS,
+  SOURCE_TYPES,
+  VISUAL_MODES,
+  canRenderSource,
+  cloneConfig,
+  hasPlaceholderSrc,
+  isValidCameraConfig,
+  normalizeCameraConfig,
+  panelStatus,
+  validateCameraConfigDetailed,
+} from './lib/cameraConfig';
 import './styles.css';
 
 const INACTIVITY_DELAY = 2600;
-const PLACEHOLDER_TOKEN = 'REPLACE_';
-const EXPECTED_PANEL_IDS = ['object', 'space', 'trace'];
-const SOURCE_TYPES = new Set(['vdo', 'video', 'embed']);
+const API_CONFIG_PATH = '/api/config/cameras';
+const BASE_URL = import.meta.env.BASE_URL || '/';
 
-const DEFAULT_SOURCE = {
-  sourceType: 'vdo',
-  src: '',
-  active: false,
-  muted: true,
-  loop: true,
-  fallbackText: 'The surface is silent.',
-  visualMode: 'normal',
-  cropMode: 'cover',
-};
-
-function isObject(value) {
-  return Boolean(value && typeof value === 'object' && !Array.isArray(value));
+function joinBasePath(path = '') {
+  const base = BASE_URL.endsWith('/') ? BASE_URL : `${BASE_URL}/`;
+  return path ? `${base}${path}` : base;
 }
 
-function isKnownSourceType(sourceType) {
-  return SOURCE_TYPES.has(sourceType);
+function getRouteFromLocation() {
+  const currentPath = window.location.pathname.replace(/\/+$/, '');
+  const editorPath = joinBasePath('editor').replace(/\/+$/, '');
+  return currentPath === editorPath ? 'editor' : 'artwork';
 }
 
-function hasSourceShape(source) {
-  return isObject(source) && isKnownSourceType(source.sourceType);
-}
-
-function isValidCameraConfig(value) {
-  if (!Array.isArray(value) || value.length !== EXPECTED_PANEL_IDS.length) {
-    return false;
-  }
-
-  return EXPECTED_PANEL_IDS.every((id, index) => {
-    const panel = value[index];
-    if (!isObject(panel) || panel.id !== id) return false;
-    if (Array.isArray(panel.sources)) {
-      return panel.sources.every(hasSourceShape);
-    }
-    return hasSourceShape(panel);
-  });
-}
-
-async function loadCameraConfig() {
-  const response = await fetch(`${import.meta.env.BASE_URL}config/cameras.json`, { cache: 'no-cache' });
+async function loadRuntimeCameraConfig() {
+  const response = await fetch(`${BASE_URL}config/cameras.json`, { cache: 'no-cache' });
   if (!response.ok) {
     throw new Error(`Camera config request failed: ${response.status}`);
   }
@@ -59,93 +45,6 @@ async function loadCameraConfig() {
   }
 
   return cameras;
-}
-
-function sourceLabel(source, index) {
-  return source.sourceId || source.sourceLabel || source.name || source.id || `source-${index + 1}`;
-}
-
-function selectRandomActiveSource(sources) {
-  const activeSources = sources
-    .map((source, index) => ({ source, index }))
-    .filter(({ source }) => source.active === true);
-
-  if (activeSources.length === 0) {
-    return { source: null, index: -1 };
-  }
-
-  return activeSources[Math.floor(Math.random() * activeSources.length)];
-}
-
-function normalizePanel(panel) {
-  const base = {
-    ...DEFAULT_SOURCE,
-    ...panel,
-    id: panel.id,
-  };
-  delete base.sources;
-
-  if (!Array.isArray(panel.sources)) {
-    return {
-      ...base,
-      selectedFromPool: false,
-      selectedSourceIndex: null,
-      selectedSourceLabel: sourceLabel(panel, 0),
-      sourcePoolSize: 1,
-    };
-  }
-
-  const { source, index } = selectRandomActiveSource(panel.sources);
-  if (!source) {
-    return {
-      ...base,
-      active: false,
-      src: '',
-      selectedFromPool: true,
-      selectedSourceIndex: null,
-      selectedSourceLabel: 'none',
-      sourcePoolSize: panel.sources.length,
-    };
-  }
-
-  return {
-    ...base,
-    ...source,
-    id: panel.id,
-    selectedFromPool: true,
-    selectedSourceIndex: index,
-    selectedSourceLabel: sourceLabel(source, index),
-    sourcePoolSize: panel.sources.length,
-  };
-}
-
-function normalizeCameraConfig(cameras) {
-  return cameras.map(normalizePanel);
-}
-
-function hasConfiguredSrc(panel) {
-  return Boolean(panel.src?.trim());
-}
-
-function hasPlaceholderSrc(panel) {
-  return Boolean(panel.src?.includes(PLACEHOLDER_TOKEN));
-}
-
-function canRenderSource(panel) {
-  return Boolean(
-    panel.active === true &&
-      isKnownSourceType(panel.sourceType) &&
-      hasConfiguredSrc(panel) &&
-      !hasPlaceholderSrc(panel)
-  );
-}
-
-function panelStatus(panel) {
-  if (panel.active !== true) return 'inactive';
-  if (!isKnownSourceType(panel.sourceType)) return 'unknown type';
-  if (!hasConfiguredSrc(panel)) return 'missing src';
-  if (hasPlaceholderSrc(panel)) return 'placeholder';
-  return 'selected';
 }
 
 function getPanelClass(panel) {
@@ -265,7 +164,7 @@ function DebugOverlay({ panels, configError, configSource, installMode, browserF
   );
 }
 
-function App() {
+function ArtworkPage({ navigate }) {
   const [panels, setPanels] = useState(() => normalizeCameraConfig(fallbackCameras));
   const [configSource, setConfigSource] = useState('internal-fallback');
   const [configError, setConfigError] = useState('');
@@ -278,7 +177,7 @@ function App() {
   useEffect(() => {
     let isMounted = true;
 
-    loadCameraConfig()
+    loadRuntimeCameraConfig()
       .then((runtimeCameras) => {
         if (!isMounted) return;
         setPanels(normalizeCameraConfig(runtimeCameras));
@@ -398,6 +297,10 @@ function App() {
 
       <p className="work-sentence">{exhibition.sentence}</p>
 
+      <button type="button" className="sources-button" onClick={() => navigate('editor')}>
+        sources
+      </button>
+
       {debugEnabled ? (
         <DebugOverlay
           panels={panels}
@@ -410,6 +313,530 @@ function App() {
       ) : null}
     </main>
   );
+}
+
+function makePreviewPanel(panel) {
+  const base = {
+    ...DEFAULT_SOURCE,
+    ...panel,
+    id: panel.id,
+  };
+  delete base.sources;
+
+  if (!Array.isArray(panel.sources)) {
+    return base;
+  }
+
+  const renderable = panel.sources.find((source) => canRenderSource({ ...base, ...source }));
+  const firstSource = renderable || panel.sources[0];
+
+  if (!firstSource) {
+    return {
+      ...base,
+      active: false,
+      src: '',
+    };
+  }
+
+  return {
+    ...base,
+    ...firstSource,
+    id: panel.id,
+  };
+}
+
+function PanelPreview({ panel }) {
+  const previewPanel = useMemo(() => makePreviewPanel(panel), [panel]);
+  const [mediaFailed, setMediaFailed] = useState(false);
+  const showSource = canRenderSource(previewPanel) && !mediaFailed;
+
+  useEffect(() => {
+    setMediaFailed(false);
+  }, [previewPanel.src, previewPanel.sourceType]);
+
+  return (
+    <div className="editor-preview" aria-label={`${panel.id} preview`}>
+      {showSource ? <Source panel={previewPanel} onMediaError={() => setMediaFailed(true)} /> : null}
+      {!showSource ? (
+        <div className="editor-preview-fallback">
+          <span>{previewPanel.fallbackText || panel.fallbackText || DEFAULT_SOURCE.fallbackText}</span>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function Field({ label, children, className = '' }) {
+  return (
+    <label className={`editor-field ${className}`}>
+      <span>{label}</span>
+      {children}
+    </label>
+  );
+}
+
+function ToggleField({ label, checked, onChange }) {
+  return (
+    <label className="editor-check">
+      <input type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} />
+      <span>{label}</span>
+    </label>
+  );
+}
+
+function SourceFields({ source, onChange, isPoolSource }) {
+  return (
+    <div className="source-fields">
+      {isPoolSource ? (
+        <Field label="source id">
+          <input
+            value={source.sourceId || ''}
+            onChange={(event) => onChange('sourceId', event.target.value)}
+            placeholder="optional-source-name"
+          />
+        </Field>
+      ) : null}
+
+      <Field label="type">
+        <select value={source.sourceType || 'vdo'} onChange={(event) => onChange('sourceType', event.target.value)}>
+          {SOURCE_TYPES.map((sourceType) => (
+            <option key={sourceType} value={sourceType}>
+              {sourceType}
+            </option>
+          ))}
+        </select>
+      </Field>
+
+      <ToggleField label="active" checked={source.active === true} onChange={(value) => onChange('active', value)} />
+
+      {source.sourceType === 'video' ? (
+        <>
+          <ToggleField
+            label="muted"
+            checked={source.muted !== false}
+            onChange={(value) => onChange('muted', value)}
+          />
+          <ToggleField label="loop" checked={source.loop !== false} onChange={(value) => onChange('loop', value)} />
+        </>
+      ) : null}
+
+      <Field label="src" className="field-wide">
+        <textarea
+          rows="3"
+          value={source.src || ''}
+          onChange={(event) => onChange('src', event.target.value)}
+          placeholder={
+            source.sourceType === 'video'
+              ? `${joinBasePath('media/example-loop.mp4')}`
+              : source.sourceType === 'embed'
+                ? 'https://example-public-webcam-embed-url'
+                : 'https://vdo.ninja/?view=STREAM_ID&cleanoutput'
+          }
+        />
+      </Field>
+
+      {hasPlaceholderSrc(source) ? <p className="editor-warning">This source still contains REPLACE_.</p> : null}
+      {source.sourceType === 'embed' ? (
+        <p className="editor-warning">
+          Use only manually selected publicly available webcam/live camera feeds that do not show private spaces or
+          identifiable people.
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+function PanelEditor({ panel, panelIndex, onPanelChange, onSourceChange, onModeChange, onAddSource, onRemoveSource }) {
+  const usesPool = Array.isArray(panel.sources);
+
+  return (
+    <section className="editor-panel">
+      <div className="editor-panel-heading">
+        <div>
+          <p className="editor-kicker">panel {panelIndex + 1}</p>
+          <h2>{panel.id}</h2>
+        </div>
+        <Field label="mode">
+          <select value={usesPool ? 'pool' : 'single'} onChange={(event) => onModeChange(panelIndex, event.target.value)}>
+            <option value="single">single source</option>
+            <option value="pool">source pool</option>
+          </select>
+        </Field>
+      </div>
+
+      <PanelPreview panel={panel} />
+
+      <div className="panel-defaults">
+        <Field label="fallback text" className="field-wide">
+          <input
+            value={panel.fallbackText || ''}
+            onChange={(event) => onPanelChange(panelIndex, 'fallbackText', event.target.value)}
+          />
+        </Field>
+
+        <Field label="visual mode">
+          <select
+            value={panel.visualMode || 'normal'}
+            onChange={(event) => onPanelChange(panelIndex, 'visualMode', event.target.value)}
+          >
+            {VISUAL_MODES.map((mode) => (
+              <option key={mode} value={mode}>
+                {mode}
+              </option>
+            ))}
+          </select>
+        </Field>
+
+        <Field label="crop">
+          <select value={panel.cropMode || 'cover'} onChange={(event) => onPanelChange(panelIndex, 'cropMode', event.target.value)}>
+            {CROP_MODES.map((mode) => (
+              <option key={mode} value={mode}>
+                {mode}
+              </option>
+            ))}
+          </select>
+        </Field>
+      </div>
+
+      {!usesPool ? (
+        <SourceFields
+          source={panel}
+          onChange={(field, value) => onPanelChange(panelIndex, field, value)}
+          isPoolSource={false}
+        />
+      ) : (
+        <div className="source-pool">
+          <div className="pool-heading">
+            <p>{panel.sources.length} sources</p>
+            <button type="button" onClick={() => onAddSource(panelIndex)}>
+              add source
+            </button>
+          </div>
+
+          {panel.sources.map((source, sourceIndex) => (
+            <article className="pool-source" key={`${panel.id}-${sourceIndex}`}>
+              <div className="pool-source-heading">
+                <h3>{source.sourceId || `source ${sourceIndex + 1}`}</h3>
+                <button type="button" onClick={() => onRemoveSource(panelIndex, sourceIndex)}>
+                  remove
+                </button>
+              </div>
+              <SourceFields
+                source={source}
+                onChange={(field, value) => onSourceChange(panelIndex, sourceIndex, field, value)}
+                isPoolSource
+              />
+            </article>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function EditorPage({ navigate }) {
+  const [config, setConfig] = useState(() => cloneConfig(fallbackCameras));
+  const [configSource, setConfigSource] = useState('internal fallback');
+  const [apiAvailable, setApiAvailable] = useState(false);
+  const [editorTheme, setEditorTheme] = useState('dark');
+  const [notice, setNotice] = useState('Checking local save server.');
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const fileInputRef = useRef(null);
+  const validation = useMemo(() => validateCameraConfigDetailed(config), [config]);
+  const editablePanels = Array.isArray(config) ? config : [];
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadConfig() {
+      setIsLoading(true);
+
+      try {
+        const apiResponse = await fetch(API_CONFIG_PATH, { cache: 'no-cache' });
+        if (!apiResponse.ok) {
+          throw new Error(`Local API unavailable: ${apiResponse.status}`);
+        }
+        const apiConfig = await apiResponse.json();
+        const apiValidation = validateCameraConfigDetailed(apiConfig);
+        if (!apiValidation.valid) {
+          throw new Error(apiValidation.errors.join(' '));
+        }
+        if (!isMounted) return;
+        setConfig(apiConfig);
+        setConfigSource('local editor server');
+        setApiAvailable(true);
+        setNotice('Local save server connected. Saving writes to public/config/cameras.json.');
+        return;
+      } catch {
+        if (!isMounted) return;
+        setApiAvailable(false);
+        setNotice('Local save server unavailable. Import and export still work; run npm run local to enable saving.');
+      }
+
+      try {
+        const runtimeConfig = await loadRuntimeCameraConfig();
+        if (!isMounted) return;
+        setConfig(runtimeConfig);
+        setConfigSource('runtime config');
+      } catch (error) {
+        if (!isMounted) return;
+        setConfig(cloneConfig(fallbackCameras));
+        setConfigSource('internal fallback');
+        setNotice(
+          `Local save server unavailable. Runtime config could not load, so the editor opened the internal fallback. ${
+            error instanceof Error ? error.message : ''
+          }`
+        );
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    }
+
+    loadConfig().finally(() => {
+      if (isMounted) setIsLoading(false);
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  function updatePanel(panelIndex, updater) {
+    setConfig((currentConfig) =>
+      currentConfig.map((panel, index) => {
+        if (index !== panelIndex) return panel;
+        return updater(cloneConfig(panel));
+      })
+    );
+  }
+
+  function handlePanelChange(panelIndex, field, value) {
+    updatePanel(panelIndex, (panel) => ({
+      ...panel,
+      [field]: value,
+    }));
+  }
+
+  function handleSourceChange(panelIndex, sourceIndex, field, value) {
+    updatePanel(panelIndex, (panel) => ({
+      ...panel,
+      sources: panel.sources.map((source, index) => (index === sourceIndex ? { ...source, [field]: value } : source)),
+    }));
+  }
+
+  function handleModeChange(panelIndex, mode) {
+    updatePanel(panelIndex, (panel) => {
+      if (mode === 'pool') {
+        if (Array.isArray(panel.sources)) return panel;
+        const { id, sources, ...directSource } = panel;
+        return {
+          id,
+          fallbackText: panel.fallbackText || DEFAULT_SOURCE.fallbackText,
+          visualMode: panel.visualMode || DEFAULT_SOURCE.visualMode,
+          cropMode: panel.cropMode || DEFAULT_SOURCE.cropMode,
+          sources: [
+            {
+              sourceId: `${id}-source-1`,
+              ...directSource,
+            },
+          ],
+        };
+      }
+
+      const firstSource = Array.isArray(panel.sources) ? panel.sources[0] : panel;
+      const nextPanel = {
+        ...DEFAULT_SOURCE,
+        ...panel,
+        ...firstSource,
+        id: panel.id,
+        fallbackText: firstSource?.fallbackText || panel.fallbackText || DEFAULT_SOURCE.fallbackText,
+        visualMode: firstSource?.visualMode || panel.visualMode || DEFAULT_SOURCE.visualMode,
+        cropMode: firstSource?.cropMode || panel.cropMode || DEFAULT_SOURCE.cropMode,
+      };
+      delete nextPanel.sources;
+      delete nextPanel.sourceId;
+      return nextPanel;
+    });
+  }
+
+  function handleAddSource(panelIndex) {
+    updatePanel(panelIndex, (panel) => ({
+      ...panel,
+      sources: [
+        ...(panel.sources || []),
+        {
+          sourceId: `${panel.id}-source-${(panel.sources || []).length + 1}`,
+          sourceType: 'vdo',
+          src: '',
+          active: false,
+          fallbackText: panel.fallbackText || DEFAULT_SOURCE.fallbackText,
+        },
+      ],
+    }));
+  }
+
+  function handleRemoveSource(panelIndex, sourceIndex) {
+    updatePanel(panelIndex, (panel) => ({
+      ...panel,
+      sources: panel.sources.filter((_, index) => index !== sourceIndex),
+    }));
+  }
+
+  async function handleSave() {
+    if (!apiAvailable || !validation.valid) return;
+    setIsSaving(true);
+    setNotice('Saving local camera config.');
+
+    try {
+      const response = await fetch(API_CONFIG_PATH, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(config),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(payload.error || 'Save failed.');
+      }
+      setNotice('Saved to public/config/cameras.json.');
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : 'Save failed.');
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  function handleExport() {
+    const blob = new Blob([`${JSON.stringify(config, null, 2)}\n`], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = 'cameras.json';
+    anchor.click();
+    URL.revokeObjectURL(url);
+    setNotice('Exported cameras.json.');
+  }
+
+  async function handleImport(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const text = await file.text();
+      const parsedConfig = JSON.parse(text);
+      setConfig(parsedConfig);
+      const result = validateCameraConfigDetailed(parsedConfig);
+      setNotice(result.valid ? 'Imported JSON.' : 'Imported JSON. Fix validation errors before saving.');
+    } catch {
+      setNotice('Import failed. Choose a valid cameras JSON file.');
+    } finally {
+      event.target.value = '';
+    }
+  }
+
+  return (
+    <main className={`editor-page editor-${editorTheme}`}>
+      <header className="editor-header">
+        <div>
+          <p className="editor-kicker">local source editor</p>
+          <h1>Soft Traces sources</h1>
+          <p>
+            Edit the three panels for trusted local exhibition setup. Static hosting keeps import/export available with
+            saving disabled.
+          </p>
+        </div>
+        <div className="editor-actions">
+          <button type="button" onClick={() => navigate('artwork')}>
+            artwork
+          </button>
+          <button
+            type="button"
+            onClick={() => setEditorTheme((currentTheme) => (currentTheme === 'dark' ? 'light' : 'dark'))}
+          >
+            {editorTheme === 'dark' ? 'light mode' : 'dark mode'}
+          </button>
+        </div>
+      </header>
+
+      <section className="editor-toolbar" aria-label="Editor controls">
+        <div>
+          <strong>{isLoading ? 'loading' : configSource}</strong>
+          <span>{notice}</span>
+        </div>
+        <div className="editor-actions">
+          <input ref={fileInputRef} className="hidden-file-input" type="file" accept="application/json" onChange={handleImport} />
+          <button type="button" onClick={() => fileInputRef.current?.click()}>
+            import JSON
+          </button>
+          <button type="button" onClick={handleExport}>
+            export JSON
+          </button>
+          <button type="button" onClick={handleSave} disabled={!apiAvailable || !validation.valid || isSaving}>
+            {isSaving ? 'saving' : 'save local'}
+          </button>
+        </div>
+      </section>
+
+      <section className={`validation-box ${validation.valid ? 'is-valid' : 'has-errors'}`}>
+        <div>
+          <strong>{validation.valid ? 'Config is valid' : 'Config needs attention'}</strong>
+          <span>Required order: {EXPECTED_PANEL_IDS.join(', ')}</span>
+        </div>
+        {validation.errors.length > 0 ? (
+          <ul>
+            {validation.errors.map((error) => (
+              <li key={error}>{error}</li>
+            ))}
+          </ul>
+        ) : null}
+        {validation.warnings.length > 0 ? (
+          <ul>
+            {validation.warnings.map((warning) => (
+              <li key={warning}>{warning}</li>
+            ))}
+          </ul>
+        ) : null}
+      </section>
+
+      <div className="editor-grid">
+        {editablePanels.map((panel, panelIndex) => (
+          <PanelEditor
+            key={`${panel.id}-${panelIndex}`}
+            panel={panel}
+            panelIndex={panelIndex}
+            onPanelChange={handlePanelChange}
+            onSourceChange={handleSourceChange}
+            onModeChange={handleModeChange}
+            onAddSource={handleAddSource}
+            onRemoveSource={handleRemoveSource}
+          />
+        ))}
+      </div>
+    </main>
+  );
+}
+
+function App() {
+  const [route, setRoute] = useState(getRouteFromLocation);
+
+  useEffect(() => {
+    function syncRoute() {
+      setRoute(getRouteFromLocation());
+    }
+
+    window.addEventListener('popstate', syncRoute);
+    return () => window.removeEventListener('popstate', syncRoute);
+  }, []);
+
+  function navigate(nextRoute) {
+    const nextPath = nextRoute === 'editor' ? joinBasePath('editor') : joinBasePath();
+    window.history.pushState({}, '', nextPath);
+    setRoute(nextRoute);
+  }
+
+  return route === 'editor' ? <EditorPage navigate={navigate} /> : <ArtworkPage navigate={navigate} />;
 }
 
 createRoot(document.getElementById('root')).render(<App />);
