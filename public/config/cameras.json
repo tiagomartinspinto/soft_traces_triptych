@@ -11,7 +11,7 @@
   {
     "id": "space",
     "sourceType": "vdo",
-    "src": "https://vdo.ninja/?view=ns2rCQH&pw=1030928",
+    "src": "",
     "active": false,
     "muted": true,
     "loop": true,
@@ -21,7 +21,7 @@
   },
   {
     "sourceType": "embed",
-    "src": "https://www.youtube-nocookie.com/embed/CvOB-Is_yYU?autoplay=1&mute=1&controls=0&playsinline=1",
+    "src": "",
     "active": false,
     "muted": true,
     "loop": true,
