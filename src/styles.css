@@ -71,6 +71,7 @@ body {
 }
 
 .feed-layer {
+  overflow: hidden;
   transform-origin: 50% 50%;
   transition:
     filter 1800ms ease,
@@ -88,18 +89,42 @@ body {
   object-fit: cover;
 }
 
-.crop-cover .iframe-frame {
+.crop-cover .video-frame {
+  object-fit: cover;
+}
+
+.crop-cover .embed-frame {
   width: 104%;
   height: 104%;
   inset: -2%;
+}
+
+.crop-cover .vdo-frame {
+  width: 300%;
+  height: 300%;
+  inset: -100%;
 }
 
 .crop-contain .video-frame {
   object-fit: contain;
 }
 
+.crop-contain .vdo-frame,
+.crop-contain .embed-frame {
+  width: 100%;
+  height: 100%;
+  inset: 0;
+}
+
 .crop-stretch .video-frame {
   object-fit: fill;
+}
+
+.crop-stretch .vdo-frame,
+.crop-stretch .embed-frame {
+  width: 100%;
+  height: 100%;
+  inset: 0;
 }
 
 .mode-cropped .feed-layer {

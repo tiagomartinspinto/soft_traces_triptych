@@ -26,6 +26,10 @@
 - Added a `preview artwork` editor toolbar button.
 - Added an editor warning for source pools explaining random active-source selection on artwork page load.
 - Converted saved YouTube `/live/` URLs in `public/config/cameras.json` to `youtube-nocookie.com/embed/` URLs.
+- Added VDO.Ninja render-time URL normalization for `cleanoutput`, `autostart`, `play`, and `muted`.
+- Updated VDO iframe crop behavior so `cover` fills the panel and crops instead of showing letterboxed bands.
+- Kept `contain` and `stretch` crop modes available for VDO iframe sources.
+- Matched editor previews to the selected panel `cropMode`.
 - Added a localhost-only Node/Express server for local exhibition setup.
 - Added `npm run local`.
 - Added local API endpoints:
@@ -67,6 +71,7 @@
 - YouTube videos and live streams may still refuse embedding if embedding is disabled by the owner or blocked by YouTube.
 - YouTube watch-page URLs are not supported as embeds; use `/embed/` URLs.
 - Artwork tabs do not update automatically after editor saves; refresh the artwork tab or use `open refreshed artwork`.
+- VDO cover mode intentionally crops the iframe to avoid letterboxing.
 - The editor can preview only sources the browser/provider allows inside the page.
 - If the local API is unavailable, editor saving is disabled by design; import/export still works.
 - The `/editor` route remains available directly, but saving still requires the local API from `npm run local`.
@@ -95,6 +100,8 @@
 - Ran `npm run build` after adding refreshed artwork workflow.
 - Confirmed local editor save shows the refreshed-artwork guidance and button.
 - Confirmed the YouTube URLs currently in `public/config/cameras.json` are detected as YouTube embed URLs.
+- Ran `npm run build` after updating VDO autoplay and crop behavior.
+- Confirmed VDO viewer URLs receive `cleanoutput`, `autostart`, `play`, and `muted`.
 - Ran tracked-file provenance scan after cleanup.
 
 ## Manual Tests To Do Next
@@ -104,6 +111,8 @@
 - Import JSON into the editor and confirm validation messages are useful.
 - Switch the editor between dark and light mode.
 - Test one real VDO.Ninja feed.
+- Confirm real VDO.Ninja feeds autoplay on the exhibition browser after the first page load.
+- Confirm VDO `cover`, `contain`, and `stretch` crop modes on the exhibition display.
 - Test one local video file under `public/media/`.
 - Test one manually selected publicly available webcam/live camera embed.
 - Test the intended YouTube embed URLs on the exhibition browser and network.

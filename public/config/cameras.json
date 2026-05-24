@@ -1,9 +1,9 @@
 [
   {
     "id": "object",
-    "sourceType": "embed",
-    "src": "https://www.youtube-nocookie.com/embed/CvOB-Is_yYU?autoplay=1&mute=1&controls=0&playsinline=1",
-    "active": false,
+    "sourceType": "vdo",
+    "src": "https://vdo.ninja/?view=MgCphvy&pw=1030928",
+    "active": true,
     "fallbackText": "The surface is silent.",
     "visualMode": "slow-zoom",
     "cropMode": "stretch"
@@ -20,18 +20,14 @@
     "cropMode": "stretch"
   },
   {
-    "id": "trace",
+    "sourceType": "embed",
+    "src": "https://www.youtube-nocookie.com/embed/CvOB-Is_yYU?autoplay=1&mute=1&controls=0&playsinline=1",
+    "active": false,
+    "muted": true,
+    "loop": true,
     "fallbackText": "The distant image is unavailable.",
     "visualMode": "ghosted",
     "cropMode": "stretch",
-    "sources": [
-      {
-        "sourceId": "trace-source-1",
-        "sourceType": "embed",
-        "src": "https://www.youtube-nocookie.com/embed/CvOB-Is_yYU?autoplay=1&mute=1&controls=0&playsinline=1",
-        "active": false,
-        "fallbackText": "The distant image is unavailable."
-      }
-    ]
+    "id": "trace"
   }
 ]

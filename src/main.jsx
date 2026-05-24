@@ -8,6 +8,7 @@ import {
   EXPECTED_PANEL_IDS,
   SOURCE_TYPES,
   VISUAL_MODES,
+  buildVdoViewerSrc,
   canRenderSource,
   cloneConfig,
   hasPlaceholderSrc,
@@ -74,11 +75,13 @@ function getPanelClass(panel) {
 }
 
 function Source({ panel, onMediaError }) {
+  const sourceSrc = panel.sourceType === 'vdo' ? buildVdoViewerSrc(panel.src) : panel.src;
+
   if (panel.sourceType === 'video') {
     return (
       <video
         className="media-frame video-frame"
-        src={panel.src}
+        src={sourceSrc}
         autoPlay
         muted={panel.muted !== false}
         loop={panel.loop !== false}
@@ -88,13 +91,13 @@ function Source({ panel, onMediaError }) {
     );
   }
 
-  const isYouTubeSource = panel.sourceType === 'embed' && isYouTubeEmbed(panel.src);
+  const isYouTubeSource = panel.sourceType === 'embed' && isYouTubeEmbed(sourceSrc);
 
   return (
     <iframe
       className={`media-frame iframe-frame ${panel.sourceType}-frame`}
       title={`${panel.id} ${panel.sourceType} source`}
-      src={panel.src}
+      src={sourceSrc}
       allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
       referrerPolicy={isYouTubeSource ? 'strict-origin-when-cross-origin' : 'no-referrer'}
       allowFullScreen={isYouTubeSource}
@@ -401,7 +404,7 @@ function PanelPreview({ panel }) {
   }, [previewPanel.src, previewPanel.sourceType]);
 
   return (
-    <div className="editor-preview" aria-label={`${panel.id} preview`}>
+    <div className={`editor-preview crop-${previewPanel.cropMode || 'cover'}`} aria-label={`${panel.id} preview`}>
       {showSource ? <Source panel={previewPanel} onMediaError={() => setMediaFailed(true)} /> : null}
       {!showSource ? (
         <div className="editor-preview-fallback">

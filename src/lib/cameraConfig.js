@@ -52,6 +52,30 @@ export function isYouTubeEmbed(src) {
   }
 }
 
+export function buildVdoViewerSrc(src) {
+  if (typeof src !== 'string' || !src.trim()) {
+    return src;
+  }
+
+  const requiredParams = ['cleanoutput', 'autostart', 'play', 'muted'];
+  const [withoutHash, hash = ''] = src.split('#');
+  const [base, query = ''] = withoutHash.split('?');
+  const existingParams = new Set(
+    query
+      .split('&')
+      .filter(Boolean)
+      .map((part) => part.split('=')[0].toLowerCase())
+  );
+  const missingParams = requiredParams.filter((param) => !existingParams.has(param));
+
+  if (missingParams.length === 0) {
+    return src;
+  }
+
+  const nextQuery = [query, ...missingParams].filter(Boolean).join('&');
+  return `${base}?${nextQuery}${hash ? `#${hash}` : ''}`;
+}
+
 export function canRenderSource(panel) {
   return Boolean(
     panel.active === true &&
