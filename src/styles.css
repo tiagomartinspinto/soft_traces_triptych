@@ -58,8 +58,53 @@ body {
   min-height: 0;
   overflow: hidden;
   isolation: isolate;
-  border: 1px solid var(--line);
-  background: var(--panel);
+  border: 1px solid rgba(246, 242, 232, 0.055);
+  background: #050505;
+}
+
+.triptych-panel::before,
+.triptych-panel::after {
+  position: absolute;
+  inset: -10%;
+  pointer-events: none;
+  content: "";
+}
+
+.triptych-panel::before {
+  z-index: 3;
+  opacity: 0.1;
+  background:
+    repeating-linear-gradient(0deg, rgba(246, 242, 232, 0.18) 0 1px, transparent 1px 5px),
+    linear-gradient(120deg, transparent 18%, rgba(246, 242, 232, 0.13), transparent 72%);
+  mix-blend-mode: screen;
+  animation: signalDrift 31s linear infinite;
+}
+
+.triptych-panel::after {
+  z-index: 4;
+  opacity: 0.13;
+  background:
+    radial-gradient(circle at 48% 46%, rgba(246, 242, 232, 0.2), transparent 24%),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.34), transparent 32%, transparent 68%, rgba(0, 0, 0, 0.38));
+  mix-blend-mode: soft-light;
+  animation: memoryBreath 43s ease-in-out infinite alternate;
+}
+
+.panel-object::before {
+  animation-delay: -7s;
+}
+
+.panel-space::before {
+  animation-duration: 37s;
+}
+
+.panel-trace::before {
+  animation-delay: -17s;
+  animation-duration: 45s;
+}
+
+.panel-trace::after {
+  animation-delay: -11s;
 }
 
 .feed-layer,
@@ -174,7 +219,21 @@ body {
   place-content: center;
   padding: clamp(18px, 4vw, 72px);
   text-align: center;
-  background: #080808;
+  background:
+    radial-gradient(circle at 50% 45%, rgba(246, 242, 232, 0.045), transparent 28%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.025), transparent 42%, rgba(0, 0, 0, 0.24)),
+    #060606;
+}
+
+.fallback-state::before {
+  position: absolute;
+  inset: -14%;
+  opacity: 0.18;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 7px, rgba(246, 242, 232, 0.075) 7px 8px),
+    radial-gradient(circle at 42% 52%, rgba(246, 242, 232, 0.08), transparent 30%);
+  content: "";
+  animation: absenceDrift 58s linear infinite;
 }
 
 .fallback-state span {
@@ -261,6 +320,25 @@ body {
   font-size: 0.92em;
 }
 
+.local-only-editor {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  padding: 2rem;
+  color: rgba(246, 242, 232, 0.68);
+  background: #050505;
+  text-align: center;
+}
+
+.local-only-editor p {
+  max-width: 32rem;
+  margin: 0;
+  font-size: clamp(0.95rem, 1.15vw, 1.25rem);
+  font-weight: 300;
+  line-height: 1.45;
+}
+
 .debug-overlay {
   position: absolute;
   right: clamp(12px, 1.5vw, 28px);
@@ -338,6 +416,38 @@ body {
 
 .debug-overlay .debug-warning {
   color: rgba(246, 242, 232, 0.82);
+}
+
+@keyframes signalDrift {
+  from {
+    transform: translate3d(-1.8%, -0.6%, 0) rotate(0.001deg);
+  }
+
+  to {
+    transform: translate3d(1.8%, 0.6%, 0) rotate(0.001deg);
+  }
+}
+
+@keyframes memoryBreath {
+  from {
+    opacity: 0.08;
+    transform: scale(1);
+  }
+
+  to {
+    opacity: 0.17;
+    transform: scale(1.04);
+  }
+}
+
+@keyframes absenceDrift {
+  from {
+    transform: translate3d(-2%, 0, 0);
+  }
+
+  to {
+    transform: translate3d(2%, 0, 0);
+  }
 }
 
 @keyframes slowWitness {

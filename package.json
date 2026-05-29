@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "local": "node local-server.js",
+    "validate:config": "node scripts/validate-config.js",
+    "check": "npm run validate:config && npm run build",
     "build": "vite build",
     "preview": "vite preview"
   },

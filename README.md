@@ -18,9 +18,23 @@ npm run build
 npm run preview
 ```
 
-The normal public artwork view intentionally shows only the triptych and one configurable sentence. During local setup on `localhost` or `127.0.0.1`, it also shows a small centered `sources` button at the bottom. The sentence is edited in `src/data/exhibition.json`.
+Run the project check before committing configuration changes:
+
+```bash
+npm run check
+```
+
+The normal public artwork view intentionally shows only the triptych and one configurable sentence. The sentence is edited in `src/data/exhibition.json`.
 
 The app does not request visitor webcam or microphone access, does not use visitor URL parameter feed overrides, does not use analytics, does not set cookies, and does not track visitors.
+
+## Exhibition Operation
+
+- Press `F` to toggle fullscreen/display mode. Browsers require a user gesture before fullscreen can start.
+- Press `D` during local setup to toggle the debug overlay.
+- Use the local editor only during setup.
+- Do not commit real feed URLs, VDO.Ninja view IDs, passwords, or private source values.
+- Keep real exhibition feeds in `public/config/cameras.local.json`, which is ignored by Git.
 
 ## Local Source Editor
 
@@ -33,23 +47,13 @@ npm install
 npm run local
 ```
 
-It is intentionally quiet in the artwork view: small, centered, low opacity, and safe to ignore during display.
+The `/editor` route is sealed on non-local hosts. On GitHub Pages or any other public host it shows only:
 
-The `/editor` route can still be opened directly. Saving remains disabled unless the local API from `npm run local` is available.
+```text
+Local source editor is available only during local setup.
+```
 
-The editor can:
-
-- View the three required panels: `object`, `space`, `trace`.
-- Switch a panel between a single source and a source pool.
-- Edit `sourceType`, `src`, `active`, `fallbackText`, `visualMode`, and `cropMode`.
-- Add and remove sources in a panel source pool.
-- Preview the current source when the browser can render it.
-- Warn about `REPLACE_` placeholders.
-- Warn when a publicly available webcam/live camera feed may show private spaces or identifiable people.
-- Import JSON and export/download JSON that matches `public/config/cameras.json`.
-- Toggle dark/light mode for the editor only.
-
-If the local save API is unavailable, the editor still works in static mode with import/export JSON. Saving is disabled and the editor shows a message explaining that `npm run local` is needed.
+Saving remains disabled unless the local API from `npm run local` is available. Import/export still works in static mode.
 
 ## Run The Local Editor Server
 
@@ -74,6 +78,14 @@ Runtime source configuration lives in:
 public/config/cameras.json
 ```
 
+Committed `public/config/cameras.json` should contain only inactive empty sources or `REPLACE_` placeholders. Keep real/private exhibition values in the ignored local file:
+
+```text
+public/config/cameras.local.json
+```
+
+Copy `public/config/cameras.local.example.json` to that ignored file for local setup.
+
 Keep exactly three panels, in this order:
 
 - `object`
@@ -93,23 +105,23 @@ Use a VDO.Ninja view URL with `cleanoutput`:
   "id": "object",
   "sourceType": "vdo",
   "src": "https://vdo.ninja/?view=REPLACE_OBJECT_STREAM_ID&cleanoutput",
-  "active": true,
+  "active": false,
   "fallbackText": "The surface is silent."
 }
 ```
 
-Only configure VDO.Ninja feeds that you control and have permission to exhibit.
+Only configure VDO.Ninja feeds that you control and have permission to exhibit. Do not commit real view IDs or password parameters.
 
 ### Local Video Loop
 
-Put local video files in `public/media/`, then reference them from `public/config/cameras.json`:
+Put local video files in `public/media/`, then reference them from the local config:
 
 ```json
 {
   "id": "space",
   "sourceType": "video",
-  "src": "/soft_traces_triptych/media/example-loop.mp4",
-  "active": true,
+  "src": "/soft_traces_triptych/media/REPLACE_SPACE_LOOP.mp4",
+  "active": false,
   "muted": true,
   "loop": true,
   "fallbackText": "The recording is absent."
@@ -127,7 +139,7 @@ Use only manually selected, permission-safe, publicly available webcam/live came
   "id": "trace",
   "sourceType": "embed",
   "src": "REPLACE_PUBLIC_WEBCAM_EMBED_URL",
-  "active": true,
+  "active": false,
   "fallbackText": "The distant image is unavailable."
 }
 ```
@@ -143,12 +155,6 @@ https://www.youtube-nocookie.com/embed/VIDEO_ID?autoplay=1&mute=1&controls=0&pla
 ```
 
 Some videos and live streams still cannot be embedded if the owner disables embedding or YouTube blocks it. Local video files are still the most stable option for exhibition playback.
-
-## Private Local Config
-
-For local/private exhibition operation, keep real feed details out of commits. Copy `public/config/cameras.local.example.json` to the ignored `public/config/cameras.local.json`, fill in the real URLs there, and import/export or copy those values into `public/config/cameras.json` on the exhibition machine.
-
-On GitHub Pages, changing `public/config/cameras.json` still requires a commit, push, and redeploy.
 
 ## Visual Modes
 
@@ -172,4 +178,4 @@ Supported `cropMode` values:
 
 The public artwork remains safe for GitHub Pages because the save API exists only in `npm run local`. Visitors cannot change feeds through URL parameters, and there is no public admin backend.
 
-For exhibition display, open the artwork route on the public host; the `sources` button is hidden there. During local setup, the artwork stays in place when `sources` is clicked while the editor opens separately.
+GitHub Pages direct opening of `/editor` is handled by a static fallback and resolves to the local-only editor notice on public hosts.

@@ -2,32 +2,30 @@
   {
     "id": "object",
     "sourceType": "vdo",
-    "src": "https://vdo.ninja/?view=MgCphvy&pw=1030928",
-    "active": true,
+    "src": "https://vdo.ninja/?view=REPLACE_OBJECT_STREAM_ID&cleanoutput",
+    "active": false,
     "fallbackText": "The surface is silent.",
     "visualMode": "slow-zoom",
-    "cropMode": "stretch"
+    "cropMode": "cover"
   },
   {
     "id": "space",
-    "sourceType": "vdo",
+    "sourceType": "video",
     "src": "",
     "active": false,
     "muted": true,
     "loop": true,
     "fallbackText": "The recording is absent.",
     "visualMode": "normal",
-    "cropMode": "stretch"
+    "cropMode": "cover"
   },
   {
+    "id": "trace",
     "sourceType": "embed",
-    "src": "",
+    "src": "REPLACE_PUBLIC_WEBCAM_EMBED_URL",
     "active": false,
-    "muted": true,
-    "loop": true,
     "fallbackText": "The distant image is unavailable.",
     "visualMode": "ghosted",
-    "cropMode": "stretch",
-    "id": "trace"
+    "cropMode": "cover"
   }
 ]

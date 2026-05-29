@@ -31,6 +31,9 @@ function joinBasePath(path = '') {
 }
 
 function getRouteFromLocation() {
+  const queryRoute = new URLSearchParams(window.location.search).get('route');
+  if (queryRoute === '/editor' || queryRoute === 'editor') return 'editor';
+
   const currentPath = window.location.pathname.replace(/\/+$/, '');
   const editorPath = joinBasePath('editor').replace(/\/+$/, '');
   return currentPath === editorPath ? 'editor' : 'artwork';
@@ -46,6 +49,14 @@ function makeArtworkUrl(configUpdated) {
     artworkUrl.searchParams.set('configUpdated', String(configUpdated));
   }
   return artworkUrl.toString();
+}
+
+function LocalOnlyEditorNotice() {
+  return (
+    <main className="local-only-editor" aria-label="Local editor unavailable">
+      <p>Local source editor is available only during local setup.</p>
+    </main>
+  );
 }
 
 async function loadRuntimeCameraConfig() {
@@ -251,12 +262,12 @@ function ArtworkPage() {
     function handleKeyDown(event) {
       const key = event.key.toLowerCase();
       if (key === 'f') toggleFullscreenStyle();
-      if (key === 'd') setDebugEnabled((value) => !value);
+      if (key === 'd' && canShowSourcesButton) setDebugEnabled((value) => !value);
     }
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [canShowSourcesButton]);
 
   useEffect(() => {
     function syncFullscreenState() {
@@ -911,7 +922,11 @@ function App() {
     setRoute(nextRoute);
   }
 
-  return route === 'editor' ? <EditorPage navigate={navigate} /> : <ArtworkPage />;
+  if (route === 'editor') {
+    return isLocalSetupHost() ? <EditorPage navigate={navigate} /> : <LocalOnlyEditorNotice />;
+  }
+
+  return <ArtworkPage />;
 }
 
 createRoot(document.getElementById('root')).render(<App />);

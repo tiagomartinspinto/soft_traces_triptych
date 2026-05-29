@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Soft Traces: Triptych</title>
+    <script>
+      (function () {
+        var base = '/soft_traces_triptych/';
+        var path = window.location.pathname;
+        var route = path.indexOf(base) === 0 ? path.slice(base.length) : '';
+        var target = base;
+
+        if (route) {
+          target += '?route=' + encodeURIComponent('/' + route.replace(/^\/+/, ''));
+        }
+
+        if (window.location.search) {
+          target += (target.indexOf('?') === -1 ? '?' : '&') + window.location.search.slice(1);
+        }
+
+        window.location.replace(target + window.location.hash);
+      })();
+    </script>
+  </head>
+  <body style="margin:0;background:#050505;color:rgba(246,242,232,.72);font:16px Arial,Helvetica,sans-serif;display:grid;place-items:center;min-height:100vh">
+    <p>Soft Traces: Triptych</p>
+  </body>
+</html>
